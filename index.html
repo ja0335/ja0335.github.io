@@ -1,12 +1,18 @@
-<!DOCTYPE html>
-<html>
-<header>
-<h1>
-	<p> My first super cool Page on GitHub!! </p>
-</h1>
-</header>
-<body>
-<a href="http://nbviewer.jupyter.org/github/ja0335/Course_12_steps_to_Navier_Stokes/blob/master/Step%201.%201D%20Linear%20Convection%20Equation.ipynb#">Step 1. 1D Linear Convection Equation</a>
+---
+layout: default
+---
 
-</body>
-</html>
+<div class="posts">
+  {% for post in site.posts %}
+    <article class="post">
+
+      <h1><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h1>
+
+      <div class="entry">
+        {{ post.excerpt }}
+      </div>
+
+      <a href="{{ site.baseurl }}{{ post.url }}" class="read-more">Read More</a>
+    </article>
+  {% endfor %}
+</div>
