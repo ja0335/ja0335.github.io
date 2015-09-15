@@ -18,17 +18,17 @@ avatar: /images/Avatar.jpg
 # Includes an icon in the footer for each username you enter
 footer-links:
   dribbble:
-  email:
+  email: ja0335@gmail.com
   facebook:
   flickr:
-  github: barryclark/jekyll-now
+  github: ja0335
   instagram:
   linkedin:
   pinterest:
   rss: # just type anything here for a working RSS icon, make sure you set the "url" above!
   twitter: ja0335
   stackoverflow: # your stackoverflow profile, e.g. "users/50476/bart-kiers"
-  youtube: # user/ja335
+  youtube: user/ja335
   googleplus: # anything in your profile username that comes after plus.google.com/
 
 
