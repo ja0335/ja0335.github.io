@@ -6,7 +6,7 @@
 name: Juan Camilo Acosta Arango
 
 # Short bio or description (displayed in the header)
-description: Mecánica de fluidos $$\frac{Du}{Dt} = \frac{\partial u}{\partial t} + (u \cdot \nabla)u$$
+description: Mecanica de fluidos $$\frac{Du}{Dt} = \frac{\partial u}{\partial t} + (u \cdot \nabla)u$$
 
 # URL of your avatar or profile pic (you could use your GitHub profile pic)
 avatar: /images/Avatar.jpg
