@@ -139,6 +139,40 @@
             cursor: pointer; font-weight: bold; white-space: nowrap; user-select: none;
         }
         #hideTextLabel:has(input:checked) { background: var(--dk-red); }
+
+        #debugPanel[open] {
+            background: #000;
+            border-radius: 8px;
+            padding: 8px 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        #debugPanel[open] summary {
+            color: #00ff41;
+            text-shadow: 0 0 8px #00ff41;
+        }
+        #debugPanel[open] pre {
+            background: transparent !important;
+            border-color: #00ff4144 !important;
+            color: #00ff41;
+            text-shadow: 0 0 5px #00ff41;
+            position: relative;
+            z-index: 1;
+        }
+        #debugPanel[open] .debug-label {
+            color: #00ff41;
+            opacity: 0.6;
+            position: relative;
+            z-index: 1;
+        }
+        #matrixCanvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.18;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -169,7 +203,7 @@
         </div>
         <div class="panel-item active" id="navVerbs" onclick="showTab('verbs')">
             <span class="panel-item-icon">📖</span>
-            <span>Verbs</span>
+            <span>Verb Master</span>
         </div>
         <div class="panel-item" id="navComposer" onclick="showTab('composer')">
             <span class="panel-item-icon">✍️</span>
@@ -243,10 +277,11 @@
 
     <details id="debugPanel" style="margin-top: 20px; font-size: 0.8em;">
         <summary style="cursor: pointer; color: var(--text-sub); user-select: none;">Debug</summary>
+        <canvas id="matrixCanvas"></canvas>
         <div style="margin-top: 8px;">
-            <div style="color: var(--text-sub); margin-bottom: 4px;">Query sent:</div>
+            <div class="debug-label" style="margin-bottom: 4px;">Query sent:</div>
             <pre id="debugQuery" style="background: var(--item-bg); border: 1px solid var(--item-border); border-radius: 8px; padding: 10px; white-space: pre-wrap; word-break: break-all; margin: 0 0 12px;"></pre>
-            <div style="color: var(--text-sub); margin-bottom: 4px;">Raw reply:</div>
+            <div class="debug-label" style="margin-bottom: 4px;">Raw reply:</div>
             <pre id="debugReply" style="background: var(--item-bg); border: 1px solid var(--item-border); border-radius: 8px; padding: 10px; white-space: pre-wrap; word-break: break-all; margin: 0;"></pre>
         </div>
     </details>
@@ -518,6 +553,58 @@
             logError("Connection failed: Check if you are offline.");
         }
     }
+
+    // --- MATRIX EFFECT ---
+    let matrixRAF = null;
+    const matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+
+    function startMatrix() {
+        const canvas = document.getElementById('matrixCanvas');
+        const panel = document.getElementById('debugPanel');
+        const ctx = canvas.getContext('2d');
+        const fontSize = 14;
+        let cols = 0;
+        let drops = [];
+
+        function syncSize() {
+            const w = panel.offsetWidth;
+            const h = panel.offsetHeight;
+            if (canvas.width !== w || canvas.height !== h) {
+                canvas.width = w;
+                canvas.height = h;
+                const newCols = Math.floor(w / fontSize);
+                while (drops.length < newCols) drops.push(Math.random() * -50);
+                drops.length = newCols;
+                cols = newCols;
+            }
+        }
+
+        function draw() {
+            syncSize();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drops.forEach((y, i) => {
+                const bright = Math.random() > 0.9;
+                ctx.fillStyle = bright ? '#ffffff' : (Math.random() > 0.5 ? '#00ff41' : '#00aa22');
+                ctx.font = `${bright ? 'bold ' : ''}${fontSize}px monospace`;
+                ctx.fillText(matrixChars[Math.floor(Math.random() * matrixChars.length)], i * fontSize, y * fontSize);
+                if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i] += 0.5;
+            });
+            matrixRAF = requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    function stopMatrix() {
+        if (matrixRAF) { cancelAnimationFrame(matrixRAF); matrixRAF = null; }
+        const ctx = document.getElementById('matrixCanvas').getContext('2d');
+        ctx.clearRect(0, 0, 9999, 9999);
+    }
+
+    document.getElementById('debugPanel').addEventListener('toggle', function () {
+        this.open ? startMatrix() : stopMatrix();
+    });
 </script>
 
 </body>
