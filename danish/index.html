@@ -212,7 +212,7 @@
         <div style="display: flex; align-items: center; gap: 12px;">
             <button class="btn-main" id="genBtn" style="flex: none; padding: 14px 24px;">Generate</button>
             <label id="hideTextLabel">
-                <input type="checkbox" id="hideTextCheck" style="display:none;"> <span id="hideTextEmoji">🙉</span> Hide text
+                <input type="checkbox" id="hideTextCheck" style="display:none;"> <span id="hideTextEmoji">🙉</span> <span id="hideTextLabel-text">Show text</span>
             </label>
             <span id="genThinking" class="hidden" style="font-size: 0.85em; color: var(--text-sub);">⏳ Gemini is thinking...</span>
         </div>
@@ -384,7 +384,7 @@
         const lastVoiceVerbs = localStorage.getItem('lastVoiceVerbs');
         if (lastVoiceVerbs) document.getElementById('voiceSelectVerbs').value = lastVoiceVerbs;
         const lastHideText = localStorage.getItem('lastHideText');
-        if (lastHideText === 'true') { document.getElementById('hideTextCheck').checked = true; document.getElementById('hideTextEmoji').textContent = '🙈'; }
+        if (lastHideText === 'true') { document.getElementById('hideTextCheck').checked = true; document.getElementById('hideTextEmoji').textContent = '🙈'; document.getElementById('hideTextLabel-text').textContent = 'Hide text'; }
         const lastSentences = localStorage.getItem('lastSentences');
         if (lastSentences) renderSentences(JSON.parse(lastSentences));
         if (localStorage.getItem('theme') === 'dark') {
@@ -399,6 +399,7 @@
     document.getElementById('hideTextCheck').addEventListener('change', function() {
         localStorage.setItem('lastHideText', this.checked);
         document.getElementById('hideTextEmoji').textContent = this.checked ? '🙈' : '🙉';
+        document.getElementById('hideTextLabel-text').textContent = this.checked ? 'Hide text' : 'Show text';
     });
 
     function requireKey(keyFn, name) {
