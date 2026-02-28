@@ -132,6 +132,35 @@
 
         .blur-text { filter: blur(6px); cursor: pointer; user-select: none; transition: filter 0.3s; }
 
+        #composerSpeed {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 4px;
+            background: var(--input-border);
+            outline: none;
+            margin-bottom: 0;
+            padding: 0;
+            border: none;
+        }
+        #composerSpeed::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--dk-red);
+            cursor: pointer;
+        }
+        #composerSpeed::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--dk-red);
+            cursor: pointer;
+            border: none;
+        }
+
         #hideTextLabel {
             display: inline-flex; align-items: center; gap: 8px;
             background: var(--accent-blue); color: white;
@@ -280,6 +309,11 @@
             <button class="btn-blue" id="listenBtn" style="flex:none;">🔊 Listen</button>
             <button class="btn-blue" id="listenSlowBtn" style="flex:none;">🐢 Listen</button>
             <span id="listenThinking" class="hidden" style="font-size:0.85em; color:var(--text-sub); white-space:nowrap;">🎙️ Sending request...</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+            <label for="composerSpeed" style="font-size:0.85rem; color:var(--text-sub); white-space:nowrap;">Speed:</label>
+            <input type="range" id="composerSpeed" min="0.5" max="1" step="0.05" value="1" style="flex:1;">
+            <span id="composerSpeedVal" style="font-size:0.85rem; color:var(--text-sub); min-width:30px; text-align:right;">1.0×</span>
         </div>
         <div id="composer-display" class="result-box hidden"></div>
     </div>
@@ -527,9 +561,11 @@
         const activeVoiceSelect = isVerbsTab ? 'voiceSelectVerbs' : 'voiceSelectComposer';
         const voiceId = document.getElementById(activeVoiceSelect).value;
         const cacheKey = voiceId + "_" + text + (isSlow ? "_slow" : "");
+        const playbackRate = !isVerbsTab ? parseFloat(document.getElementById('composerSpeed').value) : 1.0;
 
         if (audioCache[cacheKey]) {
             audioCache[cacheKey].currentTime = 0;
+            audioCache[cacheKey].playbackRate = playbackRate;
             audioCache[cacheKey].play();
             return;
         }
@@ -559,6 +595,7 @@
 
             const blob = await res.blob();
             const audio = new Audio(URL.createObjectURL(blob));
+            audio.playbackRate = playbackRate;
             audioCache[cacheKey] = audio;
             audio.play();
             if (thinkingEl) thinkingEl.classList.add('hidden');
@@ -615,6 +652,10 @@
         const ctx = document.getElementById('matrixCanvas').getContext('2d');
         ctx.clearRect(0, 0, 9999, 9999);
     }
+
+    document.getElementById('composerSpeed').addEventListener('input', function () {
+        document.getElementById('composerSpeedVal').textContent = parseFloat(this.value).toFixed(1) + '×';
+    });
 
     document.getElementById('debugPanel').addEventListener('toggle', function () {
         this.open ? startMatrix() : stopMatrix();
