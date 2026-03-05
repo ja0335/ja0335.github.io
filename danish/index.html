@@ -17,7 +17,6 @@
             --accent-blue: #2c3e50;
             --error-bg: #fff5f5;
         }
-
         [data-theme="dark"] {
             --bg-color: #121212;
             --card-bg: #1e1e1e;
@@ -29,185 +28,73 @@
             --accent-blue: #5c7d9e;
             --error-bg: #2c1a1a;
         }
-
         body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 15px; background: var(--bg-color); color: var(--text-main); transition: background 0.3s, color 0.3s; }
         .card { position: relative; background: var(--card-bg); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--dk-red); }
-
-        /* HAMBURGER */
         #menuBtn { position: absolute; top: 14px; left: 15px; font-size: 1.4rem; cursor: pointer; background: none; border: none; color: var(--text-main); padding: 0; line-height: 1; z-index: 10; }
-
         h1 { text-align: center; color: var(--dk-red); margin: 10px 0 5px; }
-
         input[type="text"], input[type="password"], input[type="number"], select, textarea {
             width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 10px;
             border: 1px solid var(--input-border); box-sizing: border-box; font-size: 1rem;
             background: var(--item-bg); color: var(--text-main);
         }
         textarea { height: 100px; }
-
         .action-btns { display: flex; gap: 10px; }
         button { flex: 1; padding: 14px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .btn-main { background: var(--dk-red); color: white; }
         .btn-blue { background: var(--accent-blue); color: white; }
-
-        #errorLog {
-            margin-top: 15px; padding: 10px; background: var(--error-bg);
-            border: 1px solid #ff000033; border-radius: 8px; font-family: monospace;
-            font-size: 0.75rem; color: #ff4444; display: none; word-wrap: break-word;
-        }
-
+        #errorLog { margin-top: 15px; padding: 10px; background: var(--error-bg); border: 1px solid #ff000033; border-radius: 8px; font-family: monospace; font-size: 0.75rem; color: #ff4444; display: none; word-wrap: break-word; }
         .result-box { background: var(--item-bg); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--item-border); }
         #status { text-align: center; font-weight: bold; margin: 10px 0; font-size: 0.85em; min-height: 20px; }
         .hidden { display: none; }
-
-        /* SIDE PANEL BACKDROP */
-        #panelBackdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            z-index: 100;
-        }
+        #panelBackdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; }
         #panelBackdrop.open { display: block; }
-
-        /* SIDE PANEL */
-        #sidePanel {
-            position: fixed;
-            top: 0; left: -280px;
-            width: 260px; height: 100%;
-            background: var(--card-bg);
-            box-shadow: 4px 0 24px rgba(0,0,0,0.2);
-            z-index: 101;
-            transition: left 0.25s ease;
-            display: flex;
-            flex-direction: column;
-        }
+        #sidePanel { position: fixed; top: 0; left: -280px; width: 260px; height: 100%; background: var(--card-bg); box-shadow: 4px 0 24px rgba(0,0,0,0.2); z-index: 101; transition: left 0.25s ease; display: flex; flex-direction: column; }
         #sidePanel.open { left: 0; }
-
-        .panel-header {
-            background: var(--dk-red);
-            color: white;
-            padding: 20px 16px 16px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+        .panel-header { background: var(--dk-red); color: white; padding: 20px 16px 16px; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between; }
         .panel-close { background: none; border: none; color: white; font-size: 1.3rem; cursor: pointer; padding: 0; line-height: 1; flex: 0; }
-
         .panel-section { padding: 8px 0; border-bottom: 1px solid var(--item-border); }
-
-        .panel-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 14px 20px; cursor: pointer; font-size: 1rem;
-            color: var(--text-main); transition: background 0.15s;
-        }
+        .panel-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; cursor: pointer; font-size: 1rem; color: var(--text-main); transition: background 0.15s; }
         .panel-item:hover { background: var(--item-bg); }
         .panel-item.active { color: var(--dk-red); font-weight: bold; }
         .panel-item-icon { font-size: 1.2rem; width: 24px; text-align: center; }
-
-        .panel-theme-row {
-            display: flex; align-items: center;
-            justify-content: space-between;
-            padding: 14px 20px;
-        }
+        .panel-theme-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
         .panel-theme-label { display: flex; align-items: center; gap: 12px; font-size: 1rem; color: var(--text-main); }
-
-        /* Toggle switch */
         .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider {
-            position: absolute; inset: 0;
-            background: var(--input-border); border-radius: 24px;
-            cursor: pointer; transition: background 0.2s;
-        }
-        .toggle-slider::before {
-            content: ""; position: absolute;
-            width: 18px; height: 18px; left: 3px; top: 3px;
-            background: white; border-radius: 50%; transition: transform 0.2s;
-        }
+        .toggle-slider { position: absolute; inset: 0; background: var(--input-border); border-radius: 24px; cursor: pointer; transition: background 0.2s; }
+        .toggle-slider::before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.2s; }
         .toggle-switch input:checked + .toggle-slider { background: var(--dk-red); }
         .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
-
         .blur-text { filter: blur(6px); cursor: pointer; user-select: none; transition: filter 0.3s; }
-
-        .speed-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            height: 6px;
-            border-radius: 4px;
-            background: var(--input-border);
-            outline: none;
-            margin-bottom: 0;
-            padding: 0;
-            border: none;
-        }
-        .speed-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--dk-red);
-            cursor: pointer;
-        }
-        .speed-slider::-moz-range-thumb {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--dk-red);
-            cursor: pointer;
-            border: none;
-        }
-
-        #hideTextLabel {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: var(--accent-blue); color: white;
-            padding: 0 16px; border-radius: 10px; align-self: stretch;
-            cursor: pointer; font-weight: bold; white-space: nowrap; user-select: none;
-        }
+        .speed-slider { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 4px; background: var(--input-border); outline: none; margin-bottom: 0; padding: 0; border: none; }
+        .speed-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 28px; height: 28px; border-radius: 50%; background: var(--dk-red); cursor: pointer; }
+        .speed-slider::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: var(--dk-red); cursor: pointer; border: none; }
+        #hideTextLabel { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-blue); color: white; padding: 0 16px; border-radius: 10px; align-self: stretch; cursor: pointer; font-weight: bold; white-space: nowrap; user-select: none; }
         #hideTextLabel:has(input:checked) { background: var(--dk-red); }
 
-        #debugPanel[open] {
-            background: #000;
-            border-radius: 8px;
-            padding: 8px 10px;
-            position: relative;
-            overflow: hidden;
-        }
-        #debugPanel[open] summary {
-            color: #00ff41;
-            text-shadow: 0 0 8px #00ff41;
-        }
-        #debugPanel[open] pre {
-            background: transparent !important;
-            border-color: #00ff4144 !important;
-            color: #00ff41;
-            text-shadow: 0 0 5px #00ff41;
-            position: relative;
-            z-index: 1;
-        }
-        #debugPanel[open] .debug-label {
-            color: #00ff41;
-            opacity: 0.6;
-            position: relative;
-            z-index: 1;
-        }
-        #matrixCanvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            opacity: 0.18;
-            pointer-events: none;
-        }
+        /* Collapsible API groups */
+        .api-group { border: 1px solid var(--item-border); border-radius: 12px; margin-bottom: 14px; overflow: hidden; }
+        .api-group-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; background: var(--item-bg); user-select: none; font-weight: bold; font-size: 0.95rem; transition: background 0.15s; }
+        .api-group-header:hover { background: var(--input-border); }
+        .api-group-header .api-badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 20px; background: var(--dk-red); color: white; font-weight: bold; }
+        .api-group-chevron { transition: transform 0.25s; font-size: 0.8rem; color: var(--text-sub); }
+        .api-group-body { padding: 14px 16px; display: none; border-top: 1px solid var(--item-border); }
+        .api-group-body.open { display: block; }
+        .api-group-body label { font-size: 0.82rem; color: var(--text-sub); display: block; margin-bottom: 4px; }
+        .api-group-body input, .api-group-body select { margin-bottom: 10px; }
+        .provider-select-row { margin-top: 4px; }
+        .provider-select-row label { font-size: 0.85rem; color: var(--text-sub); display: block; margin-bottom: 6px; font-weight: bold; }
+
+        #debugPanel[open] { background: #000; border-radius: 8px; padding: 8px 10px; position: relative; overflow: hidden; }
+        #debugPanel[open] summary { color: #00ff41; text-shadow: 0 0 8px #00ff41; }
+        #debugPanel[open] pre { background: transparent !important; border-color: #00ff4144 !important; color: #00ff41; text-shadow: 0 0 5px #00ff41; position: relative; z-index: 1; }
+        #debugPanel[open] .debug-label { color: #00ff41; opacity: 0.6; position: relative; z-index: 1; }
+        #matrixCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.18; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div id="panelBackdrop" onclick="closePanel()"></div>
-
 <div id="sidePanel">
     <div class="panel-header">
         <span>🇩🇰 Menu</span>
@@ -226,17 +113,14 @@
         </div>
     </div>
     <div class="panel-section">
-        <div class="panel-item" id="navApikeys" onclick="showTab('apikeys')">
-            <span class="panel-item-icon">🔑</span>
-            <span>API Keys</span>
+        <div class="panel-item active" id="navApikeys" onclick="showTab('apikeys')">
+            <span class="panel-item-icon">🔑</span><span>API Keys</span>
         </div>
-        <div class="panel-item active" id="navVerbs" onclick="showTab('verbs')">
-            <span class="panel-item-icon">📖</span>
-            <span>Verb Master</span>
+        <div class="panel-item" id="navVerbs" onclick="showTab('verbs')">
+            <span class="panel-item-icon">📖</span><span>Verb Master</span>
         </div>
         <div class="panel-item" id="navComposer" onclick="showTab('composer')">
-            <span class="panel-item-icon">✍️</span>
-            <span>Composer</span>
+            <span class="panel-item-icon">✍️</span><span>Composer</span>
         </div>
     </div>
 </div>
@@ -244,15 +128,75 @@
 <div class="card">
     <button id="menuBtn" onclick="openPanel()">☰</button>
 
-    <div id="tab-apikeys" class="hidden">
+    <!-- ===== API KEYS TAB ===== -->
+    <div id="tab-apikeys">
         <h1>API Keys</h1>
-        <label style="font-size:0.85rem; color:var(--text-sub);">Gemini API Key</label>
+
+        <label style="font-size:0.85rem;color:var(--text-sub);">Gemini API Key</label>
         <input type="password" id="geminiKey" placeholder="AIza...">
-        <label style="font-size:0.85rem; color:var(--text-sub);">ElevenLabs API Key</label>
-        <input type="password" id="elevenKey" placeholder="sk_...">
+
+        <!-- ElevenLabs group -->
+        <div class="api-group">
+            <div class="api-group-header" onclick="toggleGroup('el')">
+                <span>🎙️ ElevenLabs</span>
+                <span style="display:flex;align-items:center;gap:8px;">
+                    <span class="api-badge" id="elBadge">TTS</span>
+                    <span class="api-group-chevron" id="elChevron">▼</span>
+                </span>
+            </div>
+            <div class="api-group-body" id="elBody">
+                <label>API Key</label>
+                <input type="password" id="elevenKey" placeholder="sk_...">
+                <label>Model</label>
+                <select id="elevenModel">
+                    <option value="eleven_flash_v2_5">Flash v2.5 – Ultra-low latency, 32 languages</option>
+                    <option value="eleven_flash_v2">Flash v2 – Low latency, English</option>
+                    <option value="eleven_multilingual_v2" selected>Multilingual v2 – High quality, 29 languages</option>
+                    <option value="eleven_turbo_v2_5">Turbo v2.5 – Balanced quality & speed, 32 languages</option>
+                    <option value="eleven_turbo_v2">Turbo v2 – Balanced quality & speed, English</option>
+                    <option value="eleven_v3">v3 (alpha) – Most expressive, 70+ languages</option>
+                </select>
+                    </div>
+        </div>
+
+        <!-- MiniMax group -->
+        <div class="api-group">
+            <div class="api-group-header" onclick="toggleGroup('mm')">
+                <span>🤖 MiniMax Audio</span>
+                <span style="display:flex;align-items:center;gap:8px;">
+                    <span class="api-badge" id="mmBadge" style="background:var(--accent-blue);">TTS</span>
+                    <span class="api-group-chevron" id="mmChevron">▼</span>
+                </span>
+            </div>
+            <div class="api-group-body" id="mmBody">
+                <label>API Key</label>
+                <input type="password" id="minimaxKey" placeholder="eyJ...">
+                <label>Group ID <span style="font-weight:normal;">(required for MiniMax API)</span></label>
+                <input type="text" id="minimaxGroupId" placeholder="1234567890">
+                <label>Model</label>
+                <select id="minimaxModel">
+                    <option value="speech-2.8-hd">speech-2.8-hd – Latest HD, best tonal nuance</option>
+                    <option value="speech-2.8-turbo">speech-2.8-turbo – Latest Turbo, fast & nuanced</option>
+                    <option value="speech-2.6-hd">speech-2.6-hd – Great prosody & cloning</option>
+                    <option value="speech-2.6-turbo">speech-2.6-turbo – 40 languages, fast</option>
+                    <option value="speech-02-hd">speech-02-hd – Superior rhythm & stability (HD)</option>
+                    <option value="speech-02-turbo" selected>speech-02-turbo – Superior rhythm, multilingual</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Active provider -->
+        <div class="provider-select-row">
+            <label>Active TTS Provider</label>
+            <select id="activeTts">
+                <option value="elevenlabs">🎙️ ElevenLabs</option>
+                <option value="minimax">🤖 MiniMax Audio</option>
+            </select>
+        </div>
     </div>
 
-    <div id="tab-verbs">
+    <!-- ===== VERBS TAB ===== -->
+    <div id="tab-verbs" class="hidden">
         <h1>Verb Master</h1>
         <input type="text" id="verbIn" placeholder="e.g., at løbe">
         <select id="tenseIn" onchange="updateTenseDesc()">
@@ -262,80 +206,65 @@
             <option value="Førnutid">Førnutid (Result)</option>
             <option value="Imperativ">Imperativ (Command)</option>
         </select>
-        <div id="tenseDesc" style="font-size: 0.85em; color: var(--text-sub); margin-bottom: 12px; padding: 0 4px;"></div>
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            <label for="countIn" style="white-space: nowrap; color: var(--text-sub); font-size: 0.95rem;">Number of sentences:</label>
-            <input type="number" id="countIn" value="5" min="1" max="50" style="margin-bottom: 0; width: 80px;">
+        <div id="tenseDesc" style="font-size:0.85em;color:var(--text-sub);margin-bottom:12px;padding:0 4px;"></div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <label for="countIn" style="white-space:nowrap;color:var(--text-sub);font-size:0.95rem;">Number of sentences:</label>
+            <input type="number" id="countIn" value="5" min="1" max="50" style="margin-bottom:0;width:80px;">
         </div>
-        <select id="voiceSelectVerbs">
-            <option value="4RklGmuxoAskAbGXplXN">Camilla – Engaging, Clear and Calm</option>
-            <option value="V34B5u5UbLdNJVEkcgXp">Noam – Engaging and Clear</option>
-            <option value="xj6X4BCUsv9oxohm1E8o">Søren K – Clear, Confident and Versatile</option>
-            <option value="cjVigY5qzO86Huf0OWal">Eric – Male, Pro</option>
-            <option value="qhEux886xDKbOdF7jkFP">Peter – Middle-aged male, trained for audiobooks</option>
-            <option value="ygiXC2Oa1BiHksD3WkJZ">Mathias – Rich male baritone, warm and clear</option>
-            <option value="ADRrvIX3j1uTFlD5q6DE">Casper Dansk – Middle-aged calm male, good for storytelling</option>
-            <option value="6SjhOkgKPuHxm8q0eIyp">Christian – Young calm male, works well for explainer content</option>
-            <option value="Hp07ONf6C5qlCKOeB4oo">Constantin Birkedal – 50yo male, slow tempo</option>
-            <option value="C43bq5qXRueL1cBQEOt3">Thomas Hansen – Warm male, great for narrations</option>
-        </select>
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <button class="btn-main" id="genBtn" style="flex: none; padding: 14px 24px;">Generate</button>
+        <select id="voiceSelectVerbs"></select>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:0.85rem;color:var(--text-sub);white-space:nowrap;">Provider:</span>
+            <span id="verbsProviderBadge" style="font-size:0.82rem;padding:4px 10px;border-radius:20px;background:var(--dk-red);color:white;font-weight:bold;">ElevenLabs</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <button class="btn-main" id="genBtn" style="flex:none;padding:14px 24px;">Generate</button>
             <label id="hideTextLabel">
                 <input type="checkbox" id="hideTextCheck" style="display:none;"> <span id="hideTextEmoji">🙉</span> <span id="hideTextLabel-text">Show text</span>
             </label>
-            <span id="genThinking" class="hidden" style="font-size: 0.85em; color: var(--text-sub);">⏳ Gemini is thinking...</span>
+            <span id="genThinking" class="hidden" style="font-size:0.85em;color:var(--text-sub);">⏳ Gemini is thinking...</span>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
-            <label for="verbsSpeed" style="font-size:0.85rem; color:var(--text-sub); white-space:nowrap;">Speed:</label>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+            <label for="verbsSpeed" style="font-size:0.85rem;color:var(--text-sub);white-space:nowrap;">Speed:</label>
             <input type="range" id="verbsSpeed" class="speed-slider" min="0.5" max="1" step="0.05" value="1" style="flex:1;">
-            <span id="verbsSpeedVal" style="font-size:0.85rem; color:var(--text-sub); min-width:30px; text-align:right;">1.0×</span>
+            <span id="verbsSpeedVal" style="font-size:0.85rem;color:var(--text-sub);min-width:30px;text-align:right;">1.0×</span>
         </div>
         <div id="verbs-display" class="result-box hidden"></div>
     </div>
 
+    <!-- ===== COMPOSER TAB ===== -->
     <div id="tab-composer" class="hidden">
         <h1>Composer</h1>
         <textarea id="composerIn" placeholder="Write Danish here..."></textarea>
-        <select id="voiceSelectComposer">
-            <option value="4RklGmuxoAskAbGXplXN">Camilla – Engaging, Clear and Calm</option>
-            <option value="V34B5u5UbLdNJVEkcgXp">Noam – Engaging and Clear</option>
-            <option value="xj6X4BCUsv9oxohm1E8o">Søren K – Clear, Confident and Versatile</option>
-            <option value="cjVigY5qzO86Huf0OWal">Eric – Male, Pro</option>
-            <option value="qhEux886xDKbOdF7jkFP">Peter – Middle-aged male, trained for audiobooks</option>
-            <option value="ygiXC2Oa1BiHksD3WkJZ">Mathias – Rich male baritone, warm and clear</option>
-            <option value="ADRrvIX3j1uTFlD5q6DE">Casper Dansk – Middle-aged calm male, good for storytelling</option>
-            <option value="6SjhOkgKPuHxm8q0eIyp">Christian – Young calm male, works well for explainer content</option>
-            <option value="Hp07ONf6C5qlCKOeB4oo">Constantin Birkedal – 50yo male, slow tempo</option>
-            <option value="C43bq5qXRueL1cBQEOt3">Thomas Hansen – Warm male, great for narrations</option>
-        </select>
-        <button class="btn-main" id="transBtn" style="width:100%; margin-bottom:12px;">Translate</button>
-        <div style="display:flex; align-items:center; gap:10px;">
+        <select id="voiceSelectComposer"></select>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:0.85rem;color:var(--text-sub);white-space:nowrap;">Provider:</span>
+            <span id="composerProviderBadge" style="font-size:0.82rem;padding:4px 10px;border-radius:20px;background:var(--dk-red);color:white;font-weight:bold;">ElevenLabs</span>
+        </div>
+        <button class="btn-main" id="transBtn" style="width:100%;margin-bottom:12px;">Translate</button>
+        <div style="display:flex;align-items:center;gap:10px;">
             <button class="btn-blue" id="listenBtn" style="flex:none;">🔊 Listen</button>
             <button class="btn-blue" id="listenSlowBtn" style="flex:none;">🐢 Listen</button>
-            <span id="listenThinking" class="hidden" style="font-size:0.85em; color:var(--text-sub); white-space:nowrap;">🎙️ Sending request...</span>
+            <span id="listenThinking" class="hidden" style="font-size:0.85em;color:var(--text-sub);white-space:nowrap;">🎙️ Sending request...</span>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
-            <label for="composerSpeed" style="font-size:0.85rem; color:var(--text-sub); white-space:nowrap;">Speed:</label>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+            <label for="composerSpeed" style="font-size:0.85rem;color:var(--text-sub);white-space:nowrap;">Speed:</label>
             <input type="range" id="composerSpeed" class="speed-slider" min="0.5" max="1" step="0.05" value="1" style="flex:1;">
-            <span id="composerSpeedVal" style="font-size:0.85rem; color:var(--text-sub); min-width:30px; text-align:right;">1.0×</span>
+            <span id="composerSpeedVal" style="font-size:0.85rem;color:var(--text-sub);min-width:30px;text-align:right;">1.0×</span>
         </div>
         <div id="composer-display" class="result-box hidden"></div>
     </div>
 
     <div id="status"></div>
-
-
     <div id="errorLog"></div>
 
-    <details id="debugPanel" style="margin-top: 20px; font-size: 0.8em;">
-        <summary style="cursor: pointer; color: var(--text-sub); user-select: none;">Debug</summary>
+    <details id="debugPanel" style="margin-top:20px;font-size:0.8em;">
+        <summary style="cursor:pointer;color:var(--text-sub);user-select:none;">Debug</summary>
         <canvas id="matrixCanvas"></canvas>
-        <div style="margin-top: 8px;">
-            <div class="debug-label" style="margin-bottom: 4px;">Query sent:</div>
-            <pre id="debugQuery" style="background: var(--item-bg); border: 1px solid var(--item-border); border-radius: 8px; padding: 10px; white-space: pre-wrap; word-break: break-all; margin: 0 0 12px;"></pre>
-            <div class="debug-label" style="margin-bottom: 4px;">Raw reply:</div>
-            <pre id="debugReply" style="background: var(--item-bg); border: 1px solid var(--item-border); border-radius: 8px; padding: 10px; white-space: pre-wrap; word-break: break-all; margin: 0;"></pre>
+        <div style="margin-top:8px;">
+            <div class="debug-label" style="margin-bottom:4px;">Query sent:</div>
+            <pre id="debugQuery" style="background:var(--item-bg);border:1px solid var(--item-border);border-radius:8px;padding:10px;white-space:pre-wrap;word-break:break-all;margin:0 0 12px;"></pre>
+            <div class="debug-label" style="margin-bottom:4px;">Raw reply:</div>
+            <pre id="debugReply" style="background:var(--item-bg);border:1px solid var(--item-border);border-radius:8px;padding:10px;white-space:pre-wrap;word-break:break-all;margin:0;"></pre>
         </div>
     </details>
 </div>
@@ -343,37 +272,92 @@
 <script>
     const G_KEY = () => document.getElementById('geminiKey').value.trim();
     const E_KEY = () => document.getElementById('elevenKey').value.trim();
+    const MM_KEY = () => document.getElementById('minimaxKey').value.trim();
+    const MM_GID = () => document.getElementById('minimaxGroupId').value.trim();
+    const ACTIVE_TTS = () => document.getElementById('activeTts').value;
+
+    const VOICES = {
+        elevenlabs: [
+            { value: '4RklGmuxoAskAbGXplXN', label: 'Camilla – Engaging, Clear and Calm' },
+            { value: 'V34B5u5UbLdNJVEkcgXp', label: 'Noam – Engaging and Clear' },
+            { value: 'xj6X4BCUsv9oxohm1E8o', label: 'Søren K – Clear, Confident and Versatile' },
+            { value: 'cjVigY5qzO86Huf0OWal', label: 'Eric – Male, Pro' },
+            { value: 'qhEux886xDKbOdF7jkFP', label: 'Peter – Middle-aged male, trained for audiobooks' },
+            { value: 'ygiXC2Oa1BiHksD3WkJZ', label: 'Mathias – Rich male baritone, warm and clear' },
+            { value: 'ADRrvIX3j1uTFlD5q6DE', label: 'Casper Dansk – Middle-aged calm male' },
+            { value: '6SjhOkgKPuHxm8q0eIyp', label: 'Christian – Young calm male' },
+            { value: 'Hp07ONf6C5qlCKOeB4oo', label: 'Constantin Birkedal – 50yo male, slow tempo' },
+            { value: 'C43bq5qXRueL1cBQEOt3', label: 'Thomas Hansen – Warm male, narrations' },
+        ],
+        minimax: [
+            { value: 'Danish_male_1_v1',  label: '🇩🇰 Energetic Youth – Bright, Energetic, Polished (Danish)' },
+            { value: 'Danish_female_1_v1',label: '🇩🇰 Wise Woman – Bright, Articulate, Warm (Danish)' },
+            { value: 'Wise_Woman',        label: 'Wise Woman – Calm, authoritative female' },
+            { value: 'Friendly_Person',   label: 'Friendly Person – Warm, approachable' },
+            { value: 'Inspirational_girl',label: 'Inspirational Girl – Uplifting female' },
+            { value: 'Deep_Voice_Man',    label: 'Deep Voice Man – Rich, deep male' },
+            { value: 'Calm_Woman',        label: 'Calm Woman – Soothing female' },
+            { value: 'Casual_Guy',        label: 'Casual Guy – Relaxed male' },
+            { value: 'Lively_Girl',       label: 'Lively Girl – Energetic female' },
+            { value: 'Patient_Man',       label: 'Patient Man – Clear, measured male' },
+            { value: 'Young_Knight',      label: 'Young Knight – Confident young male' },
+            { value: 'Determined_Man',    label: 'Determined Man – Strong, clear male' },
+            { value: 'Lovely_Girl',       label: 'Lovely Girl – Gentle, pleasant female' },
+            { value: 'Decent_Boy',        label: 'Decent Boy – Neutral, clear male' },
+            { value: 'Imposing_Manner',   label: 'Imposing Manner – Bold, commanding male' },
+            { value: 'Elegant_Man',       label: 'Elegant Man – Refined male voice' },
+            { value: 'Abbess',            label: 'Abbess – Calm, dignified female' },
+            { value: 'Sweet_Girl_2',      label: 'Sweet Girl – Light, pleasant female' },
+            { value: 'Exuberant_Girl',    label: 'Exuberant Girl – Lively, expressive female' },
+        ]
+    };
+
+    function populateVoiceSelects(provider, savedValue) {
+        const voices = VOICES[provider];
+        ['voiceSelectVerbs','voiceSelectComposer'].forEach(id => {
+            const sel = document.getElementById(id);
+            sel.innerHTML = voices.map(v => `<option value="${v.value}">${v.label}</option>`).join('');
+            if (savedValue && voices.find(v => v.value === savedValue)) sel.value = savedValue;
+        });
+    }
 
     const audioCache = {};
 
     const tenseDescriptions = {
-        Infinitiv:  "It's the \"raw\" verb. It hasn't happened yet; it's just the idea or intent (to do).",
-        Nutid:      "Use it for what you do now, but especially for what you do usually or always.",
-        Datid:      "It belongs to a specific, finished point in the past (yesterday, then, 1990).",
-        Førnutid:   "You don't care when it happened; you care that it is done right now.",
-        Imperativ:  "It's a direct order or a \"bossy\" instruction."
+        Infinitiv: "It's the \"raw\" verb. It hasn't happened yet; it's just the idea or intent (to do).",
+        Nutid: "Use it for what you do now, but especially for what you do usually or always.",
+        Datid: "It belongs to a specific, finished point in the past (yesterday, then, 1990).",
+        Førnutid: "You don't care when it happened; you care that it is done right now.",
+        Imperativ: "It's a direct order or a \"bossy\" instruction."
     };
 
+    // ---- COLLAPSIBLE GROUPS ----
+    function toggleGroup(id) {
+        const body = document.getElementById(id + 'Body');
+        const chevron = document.getElementById(id + 'Chevron');
+        const isOpen = body.classList.contains('open');
+        body.classList.toggle('open', !isOpen);
+        chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+    }
+
     function updateTenseDesc() {
-        const val = document.getElementById('tenseIn').value;
-        document.getElementById('tenseDesc').innerText = tenseDescriptions[val] || "";
+        document.getElementById('tenseDesc').innerText = tenseDescriptions[document.getElementById('tenseIn').value] || "";
     }
 
     function openPanel() {
         document.getElementById('sidePanel').classList.add('open');
         document.getElementById('panelBackdrop').classList.add('open');
     }
-
     function closePanel() {
         document.getElementById('sidePanel').classList.remove('open');
         document.getElementById('panelBackdrop').classList.remove('open');
     }
 
     function showTab(tabId) {
-        ['apikeys', 'verbs', 'composer'].forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
-        ['navApikeys', 'navVerbs', 'navComposer'].forEach(n => document.getElementById(n).classList.remove('active'));
-        document.getElementById('tab-' + tabId).classList.remove('hidden');
-        document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
+        ['apikeys','verbs','composer'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
+        ['navApikeys','navVerbs','navComposer'].forEach(n => document.getElementById(n).classList.remove('active'));
+        document.getElementById('tab-'+tabId).classList.remove('hidden');
+        document.getElementById('nav'+tabId.charAt(0).toUpperCase()+tabId.slice(1)).classList.add('active');
         closePanel();
     }
 
@@ -388,21 +372,119 @@
         log.style.display = "block";
         log.innerText = "Error: " + msg;
     }
-
     function setStatus(msg) {
         document.getElementById('status').innerText = msg;
         document.getElementById('errorLog').style.display = "none";
     }
 
-    document.getElementById('hideTextCheck').addEventListener('change', function () {
-        document.querySelectorAll('.sentence-text').forEach(el => {
-            el.classList.toggle('blur-text', this.checked);
+    function updateProviderBadges() {
+        const p = ACTIVE_TTS();
+        const label = p === 'elevenlabs' ? '🎙️ ElevenLabs' : '🤖 MiniMax';
+        const color = p === 'elevenlabs' ? 'var(--dk-red)' : 'var(--accent-blue)';
+        ['verbsProviderBadge','composerProviderBadge'].forEach(id => {
+            const el = document.getElementById(id);
+            el.textContent = label;
+            el.style.background = color;
+        });
+        document.getElementById('elBadge').style.background = p === 'elevenlabs' ? 'var(--dk-red)' : 'var(--input-border)';
+        document.getElementById('mmBadge').style.background = p === 'minimax' ? 'var(--accent-blue)' : 'var(--input-border)';
+        // repopulate voices for new provider, restoring saved selection
+        const savedVoice = localStorage.getItem('lastVoice_' + p);
+        populateVoiceSelects(p, savedVoice);
+    }
+
+    // ---- PERSIST: save all new settings ----
+    const persist = (id, key) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const ev = (el.type === 'checkbox') ? 'change' : 'input';
+        el.addEventListener(ev, () => {
+            localStorage.setItem(key, el.type === 'checkbox' ? el.checked : el.value);
+        });
+    };
+
+    // ---- RESTORE all settings on load ----
+    window.onload = () => {
+        updateTenseDesc();
+        const load = (id, key, attr='value') => {
+            const v = localStorage.getItem(key);
+            const el = document.getElementById(id);
+            if (v !== null && el) {
+                if (attr === 'checked') el.checked = v === 'true';
+                else el.value = v;
+            }
+        };
+        load('geminiKey','geminiKey');
+        load('elevenKey','elevenKey');
+        load('minimaxKey','minimaxKey');
+        load('minimaxGroupId','minimaxGroupId');
+        load('elevenModel','elevenModel');
+        load('minimaxModel','minimaxModel');
+        load('activeTts','activeTts');
+        load('verbIn','lastVerb');
+        load('tenseIn','lastTense');
+        load('countIn','lastCount');
+        load('verbsSpeed','verbsSpeed');
+        load('composerSpeed','composerSpeed');
+        const lh = localStorage.getItem('lastHideText');
+        if (lh === 'true') {
+            document.getElementById('hideTextCheck').checked = true;
+            document.getElementById('hideTextEmoji').textContent = '🙈';
+            document.getElementById('hideTextLabel-text').textContent = 'Hide text';
+        }
+        const ls = localStorage.getItem('lastSentences');
+        if (ls) renderSentences(JSON.parse(ls));
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme','dark');
+            document.getElementById('themeToggle').checked = true;
+        }
+        const vv = localStorage.getItem('verbsSpeed');
+        if (vv) document.getElementById('verbsSpeedVal').textContent = parseFloat(vv).toFixed(1)+'×';
+        const cv = localStorage.getItem('composerSpeed');
+        if (cv) document.getElementById('composerSpeedVal').textContent = parseFloat(cv).toFixed(1)+'×';
+        updateTenseDesc();
+        updateProviderBadges();
+    };
+
+    // Wire up persistence for all fields
+    persist('geminiKey','geminiKey');
+    persist('elevenKey','elevenKey');
+    persist('minimaxKey','minimaxKey');
+    persist('minimaxGroupId','minimaxGroupId');
+    persist('elevenModel','elevenModel');
+    persist('minimaxModel','minimaxModel');
+    persist('voiceSelectVerbs', 'dummy_voice'); // handled below
+    // Save voice per provider when changed
+    ['voiceSelectVerbs','voiceSelectComposer'].forEach(id => {
+        document.getElementById(id).addEventListener('change', function() {
+            localStorage.setItem('lastVoice_' + ACTIVE_TTS(), this.value);
+            // keep both selects in sync
+            const other = id === 'voiceSelectVerbs' ? 'voiceSelectComposer' : 'voiceSelectVerbs';
+            document.getElementById(other).value = this.value;
         });
     });
-
-    window.addEventListener('pageshow', (event) => {
-        if (event.persisted) window.location.reload();
+    persist('tenseIn','lastTense');
+    persist('countIn','lastCount');
+    persist('verbIn','lastVerb');
+    document.getElementById('activeTts').addEventListener('change', () => {
+        localStorage.setItem('activeTts', ACTIVE_TTS());
+        updateProviderBadges();
     });
+    document.getElementById('hideTextCheck').addEventListener('change', function() {
+        localStorage.setItem('lastHideText', this.checked);
+        document.getElementById('hideTextEmoji').textContent = this.checked ? '🙈' : '🙉';
+        document.getElementById('hideTextLabel-text').textContent = this.checked ? 'Hide text' : 'Show text';
+    });
+    document.getElementById('hideTextCheck').addEventListener('change', function() {
+        document.querySelectorAll('.sentence-text').forEach(el => el.classList.toggle('blur-text', this.checked));
+    });
+
+    window.addEventListener('pageshow', e => { if (e.persisted) window.location.reload(); });
+
+    function requireKey(keyFn, name) {
+        if (!keyFn()) { logError(`Please enter your ${name} API key in the API Keys tab.`); return false; }
+        return true;
+    }
 
     function renderSentences(items) {
         const display = document.getElementById('verbs-display');
@@ -412,266 +494,233 @@
         items.forEach(item => {
             const row = document.createElement('div');
             row.style.marginBottom = "10px";
-
             const textDiv = document.createElement('div');
             textDiv.className = 'sentence-text';
             textDiv.innerHTML = `<strong>${item.dk}</strong><br><small>${item.en}</small>`;
             if (hideText) textDiv.classList.add('blur-text');
             textDiv.addEventListener('click', () => {
-                if (textDiv.classList.contains('blur-text')) {
-                    textDiv.classList.remove('blur-text');
-                } else if (document.getElementById('hideTextCheck').checked) {
-                    textDiv.classList.add('blur-text');
-                }
+                if (textDiv.classList.contains('blur-text')) textDiv.classList.remove('blur-text');
+                else if (document.getElementById('hideTextCheck').checked) textDiv.classList.add('blur-text');
             });
             row.appendChild(textDiv);
-
             const btnDiv = document.createElement('div');
-            btnDiv.style.cssText = "display:flex; align-items:center; gap:10px; margin-top:5px;";
-
+            btnDiv.style.cssText = "display:flex;align-items:center;gap:10px;margin-top:5px;";
             const normalBtn = document.createElement('button');
-            normalBtn.className = 'btn-blue';
-            normalBtn.style.flex = 'none';
-            normalBtn.textContent = '🔊 Listen';
+            normalBtn.className = 'btn-blue'; normalBtn.style.flex = 'none'; normalBtn.textContent = '🔊 Listen';
             normalBtn.onclick = () => speak(item.dk, normalBtn, false);
-
             const slowBtn = document.createElement('button');
-            slowBtn.className = 'btn-blue';
-            slowBtn.style.flex = 'none';
-            slowBtn.textContent = '🐢 Listen';
+            slowBtn.className = 'btn-blue'; slowBtn.style.flex = 'none'; slowBtn.textContent = '🐢 Listen';
             slowBtn.onclick = () => speak(item.dk, slowBtn, true);
-
             const thinking = document.createElement('span');
-            thinking.className = 'hidden';
-            thinking.style.cssText = "font-size:0.85em; color:var(--text-sub);";
+            thinking.className = 'hidden'; thinking.style.cssText = "font-size:0.85em;color:var(--text-sub);";
             thinking.textContent = '🎙️ Sending request...';
-
-            btnDiv.appendChild(normalBtn);
-            btnDiv.appendChild(slowBtn);
-            btnDiv.appendChild(thinking);
+            btnDiv.appendChild(normalBtn); btnDiv.appendChild(slowBtn); btnDiv.appendChild(thinking);
             row.appendChild(btnDiv);
             display.appendChild(row);
         });
     }
 
-    document.getElementById('geminiKey').addEventListener('input', () => localStorage.setItem('geminiKey', document.getElementById('geminiKey').value));
-    document.getElementById('elevenKey').addEventListener('input', () => localStorage.setItem('elevenKey', document.getElementById('elevenKey').value));
-
-    window.onload = () => {
-        updateTenseDesc();
-        const geminiKey = localStorage.getItem('geminiKey');
-        if (geminiKey) document.getElementById('geminiKey').value = geminiKey;
-        const elevenKey = localStorage.getItem('elevenKey');
-        if (elevenKey) document.getElementById('elevenKey').value = elevenKey;
-        const lastVerb = localStorage.getItem('lastVerb');
-        if (lastVerb) document.getElementById('verbIn').value = lastVerb;
-        const lastTense = localStorage.getItem('lastTense');
-        if (lastTense) { document.getElementById('tenseIn').value = lastTense; updateTenseDesc(); }
-        const lastCount = localStorage.getItem('lastCount');
-        if (lastCount) document.getElementById('countIn').value = lastCount;
-        const lastVoiceVerbs = localStorage.getItem('lastVoiceVerbs');
-        if (lastVoiceVerbs) document.getElementById('voiceSelectVerbs').value = lastVoiceVerbs;
-        const lastHideText = localStorage.getItem('lastHideText');
-        if (lastHideText === 'true') { document.getElementById('hideTextCheck').checked = true; document.getElementById('hideTextEmoji').textContent = '🙈'; document.getElementById('hideTextLabel-text').textContent = 'Hide text'; }
-        const lastSentences = localStorage.getItem('lastSentences');
-        if (lastSentences) renderSentences(JSON.parse(lastSentences));
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-            document.getElementById('themeToggle').checked = true;
-        }
-    };
-
-    document.getElementById('tenseIn').addEventListener('change', () => localStorage.setItem('lastTense', document.getElementById('tenseIn').value));
-    document.getElementById('countIn').addEventListener('change', () => localStorage.setItem('lastCount', document.getElementById('countIn').value));
-    document.getElementById('voiceSelectVerbs').addEventListener('change', () => localStorage.setItem('lastVoiceVerbs', document.getElementById('voiceSelectVerbs').value));
-    document.getElementById('hideTextCheck').addEventListener('change', function() {
-        localStorage.setItem('lastHideText', this.checked);
-        document.getElementById('hideTextEmoji').textContent = this.checked ? '🙈' : '🙉';
-        document.getElementById('hideTextLabel-text').textContent = this.checked ? 'Hide text' : 'Show text';
-    });
-
-    function requireKey(keyFn, name) {
-        if (!keyFn()) {
-            logError(`Please enter your ${name} API key in the API Keys tab.`);
-            return false;
-        }
-        return true;
-    }
-
-    // --- LOGIC ---
+    // ---- GENERATE ----
     document.getElementById('genBtn').onclick = async () => {
         const verb = document.getElementById('verbIn').value;
         const tense = document.getElementById('tenseIn').value;
-        if(!verb) return;
-        if(!requireKey(G_KEY, 'Gemini')) return;
+        if (!verb) return;
+        if (!requireKey(G_KEY,'Gemini')) return;
         localStorage.setItem('lastVerb', verb);
         document.getElementById('genThinking').classList.remove('hidden');
         try {
-            const count = Math.min(50, Math.max(1, parseInt(document.getElementById('countIn').value) || 5));
-            const prompt = `Generate ${count} Danish sentences with "${verb}" in ${tense}. Return ONLY JSON: [{"dk": "...", "en": "..."}]`;
+            const count = Math.min(50, Math.max(1, parseInt(document.getElementById('countIn').value)||5));
+            const prompt = `Generate ${count} Danish sentences with "${verb}" in ${tense}. Return ONLY JSON: [{"dk":"...","en":"..."}]`;
             document.getElementById('debugQuery').textContent = prompt;
             document.getElementById('debugReply').textContent = "";
-            
-            // To see available models: https://generativelanguage.googleapis.com/v1/models?key=YOUR_KEY
             const MODEL = "gemini-2.5-flash-lite";
             const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${G_KEY()}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({contents:[{parts:[{text:prompt}]}]})
             });
             const data = await res.json();
-            document.getElementById('debugReply').textContent = JSON.stringify(data, null, 2);
+            document.getElementById('debugReply').textContent = JSON.stringify(data,null,2);
             const text = data.candidates[0].content.parts[0].text;
-            const items = JSON.parse(text.substring(text.indexOf('['), text.lastIndexOf(']') + 1));
+            const items = JSON.parse(text.substring(text.indexOf('['), text.lastIndexOf(']')+1));
             localStorage.setItem('lastSentences', JSON.stringify(items));
             renderSentences(items);
             document.getElementById('genThinking').classList.add('hidden');
-        } catch (e) {
+        } catch(e) {
             document.getElementById('genThinking').classList.add('hidden');
-            logError("Gemini failed: " + e.message);
+            logError("Gemini failed: "+e.message);
         }
     };
 
+    // ---- TRANSLATE ----
     document.getElementById('transBtn').onclick = async () => {
         const text = document.getElementById('composerIn').value;
-        if(!text) return;
-        if(!requireKey(G_KEY, 'Gemini')) return;
+        if (!text) return;
+        if (!requireKey(G_KEY,'Gemini')) return;
         setStatus("⏳ Translating...");
         try {
             const prompt = `Translate to English: "${text}"`;
             document.getElementById('debugQuery').textContent = prompt;
             document.getElementById('debugReply').textContent = "";
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY()}`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({contents:[{parts:[{text:prompt}]}]})
             });
             const data = await res.json();
-            document.getElementById('debugReply').textContent = JSON.stringify(data, null, 2);
+            document.getElementById('debugReply').textContent = JSON.stringify(data,null,2);
             const display = document.getElementById('composer-display');
             display.innerHTML = data.candidates[0].content.parts[0].text;
             display.classList.remove('hidden');
             setStatus("");
-        } catch (e) { logError("Translation Error: " + e.message); }
+        } catch(e) { logError("Translation Error: "+e.message); }
     };
 
-    document.getElementById('listenBtn').onclick = () => {
-        const text = document.getElementById('composerIn').value;
-        if(text) speak(text, null, false);
-    };
-    document.getElementById('listenSlowBtn').onclick = () => {
-        const text = document.getElementById('composerIn').value;
-        if(text) speak(text, null, true);
-    };
+    document.getElementById('listenBtn').onclick = () => { const t = document.getElementById('composerIn').value; if(t) speak(t,null,false); };
+    document.getElementById('listenSlowBtn').onclick = () => { const t = document.getElementById('composerIn').value; if(t) speak(t,null,true); };
 
-    async function speak(text, btn = null, slow = null) {
+    // ---- SPEAK (routes to correct provider) ----
+    async function speak(text, btn=null, slow=false) {
+        const provider = ACTIVE_TTS();
+        if (provider === 'elevenlabs') await speakElevenLabs(text, btn, slow);
+        else await speakMiniMax(text, btn, slow);
+    }
+
+    async function speakElevenLabs(text, btn, slow) {
+        if (!requireKey(E_KEY,'ElevenLabs')) return;
         const isVerbsTab = !document.getElementById('tab-verbs').classList.contains('hidden');
-        const isSlow = slow === true;
-        const activeVoiceSelect = isVerbsTab ? 'voiceSelectVerbs' : 'voiceSelectComposer';
-        const voiceId = document.getElementById(activeVoiceSelect).value;
-        const cacheKey = voiceId + "_" + text + (isSlow ? "_slow" : "");
-        const playbackRate = isVerbsTab ? parseFloat(document.getElementById('verbsSpeed').value) : parseFloat(document.getElementById('composerSpeed').value);
-
+        const voiceId = document.getElementById('voiceSelectVerbs').value;
+        const modelId = document.getElementById('elevenModel').value;
+        const playbackRate = parseFloat(document.getElementById(isVerbsTab ? 'verbsSpeed' : 'composerSpeed').value);
+        const cacheKey = `el_${modelId}_${voiceId}_${text}${slow?'_slow':''}`;
         if (audioCache[cacheKey]) {
             audioCache[cacheKey].currentTime = 0;
             audioCache[cacheKey].playbackRate = playbackRate;
-            audioCache[cacheKey].play();
-            return;
+            audioCache[cacheKey].play(); return;
         }
-
-        if(!requireKey(E_KEY, 'ElevenLabs')) return;
-
         const thinkingEl = btn ? btn.parentElement.querySelector('span') : (!isVerbsTab ? document.getElementById('listenThinking') : null);
         if (thinkingEl) thinkingEl.classList.remove('hidden');
-
         try {
             const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-                method: 'POST',
-                headers: { 'xi-api-key': E_KEY(), 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    text: text,
-                    model_id: "eleven_multilingual_v2",
-                    voice_settings: { stability: 0.5, similarity_boost: 0.75, speed: isSlow ? 0.7 : 1.0 }
-                })
+                method:'POST',
+                headers:{'xi-api-key':E_KEY(),'Content-Type':'application/json'},
+                body: JSON.stringify({text, model_id:modelId, voice_settings:{stability:0.5,similarity_boost:0.75,speed:slow?0.7:1.0}})
             });
-
             if (!res.ok) {
-                const errorData = await res.json();
+                const err = await res.json();
                 if (thinkingEl) thinkingEl.classList.add('hidden');
-                logError(`ElevenLabs ${res.status}: ${errorData.detail?.message || res.statusText}`);
-                return;
+                logError(`ElevenLabs ${res.status}: ${err.detail?.message||res.statusText}`); return;
             }
-
             const blob = await res.blob();
             const audio = new Audio(URL.createObjectURL(blob));
             audio.playbackRate = playbackRate;
             audioCache[cacheKey] = audio;
             audio.play();
             if (thinkingEl) thinkingEl.classList.add('hidden');
-        } catch (e) {
+        } catch(e) {
             if (thinkingEl) thinkingEl.classList.add('hidden');
             logError("Connection failed: Check if you are offline.");
         }
     }
 
-    // --- MATRIX EFFECT ---
+    async function speakMiniMax(text, btn, slow) {
+        if (!requireKey(MM_KEY,'MiniMax')) return;
+        if (!MM_GID()) { logError("Please enter your MiniMax Group ID in the API Keys tab."); return; }
+        const isVerbsTab = !document.getElementById('tab-verbs').classList.contains('hidden');
+        const voiceId = document.getElementById('voiceSelectVerbs').value;
+        const modelId = document.getElementById('minimaxModel').value;
+        const playbackRate = parseFloat(document.getElementById(isVerbsTab ? 'verbsSpeed' : 'composerSpeed').value);
+        const cacheKey = `mm_${modelId}_${voiceId}_${text}${slow?'_slow':''}`;
+        if (audioCache[cacheKey]) {
+            audioCache[cacheKey].currentTime = 0;
+            audioCache[cacheKey].playbackRate = playbackRate;
+            audioCache[cacheKey].play(); return;
+        }
+        const thinkingEl = btn ? btn.parentElement.querySelector('span') : (!isVerbsTab ? document.getElementById('listenThinking') : null);
+        if (thinkingEl) thinkingEl.classList.remove('hidden');
+        try {
+            const speed = slow ? 0.75 : 1.0;
+            const body = {
+                model: modelId,
+                text,
+                stream: false,
+                language_boost: "Danish",
+                voice_setting: { voice_id: voiceId, speed, vol: 1.0, pitch: 0 },
+                audio_setting: { sample_rate: 32000, bitrate: 128000, format: "mp3", channel: 1 }
+            };
+            document.getElementById('debugQuery').textContent = JSON.stringify(body, null, 2);
+            const res = await fetch(`https://api.minimaxi.chat/v1/t2a_v2?GroupId=${MM_GID()}`, {
+                method:'POST',
+                headers:{'Authorization':`Bearer ${MM_KEY()}`,'Content-Type':'application/json'},
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            document.getElementById('debugReply').textContent = JSON.stringify(data, null, 2);
+            if (!res.ok || !data.data?.audio) {
+                if (thinkingEl) thinkingEl.classList.add('hidden');
+                logError(`MiniMax error: ${data.base_resp?.status_msg || res.statusText}`); return;
+            }
+            // MiniMax returns hex-encoded PCM or base64 mp3 depending on format
+            const audioUrl = data.data.audio;
+            const audio = new Audio(audioUrl);
+            audio.playbackRate = playbackRate;
+            audioCache[cacheKey] = audio;
+            audio.play();
+            if (thinkingEl) thinkingEl.classList.add('hidden');
+        } catch(e) {
+            if (thinkingEl) thinkingEl.classList.add('hidden');
+            logError("MiniMax request failed: "+e.message);
+        }
+    }
+
+    // ---- SPEED SLIDERS ----
+    document.getElementById('composerSpeed').addEventListener('input', function() {
+        document.getElementById('composerSpeedVal').textContent = parseFloat(this.value).toFixed(1)+'×';
+        localStorage.setItem('composerSpeed', this.value);
+    });
+    document.getElementById('verbsSpeed').addEventListener('input', function() {
+        document.getElementById('verbsSpeedVal').textContent = parseFloat(this.value).toFixed(1)+'×';
+        localStorage.setItem('verbsSpeed', this.value);
+    });
+
+    // ---- MATRIX ----
     let matrixRAF = null;
     const matrixChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
-
     function startMatrix() {
         const canvas = document.getElementById('matrixCanvas');
         const panel = document.getElementById('debugPanel');
         const ctx = canvas.getContext('2d');
-        const fontSize = 14;
-        let cols = 0;
-        let drops = [];
-
+        const fontSize = 14; let drops = [];
         function syncSize() {
-            const w = panel.offsetWidth;
-            const h = panel.offsetHeight;
+            const w = panel.offsetWidth, h = panel.offsetHeight;
             if (canvas.width !== w || canvas.height !== h) {
-                canvas.width = w;
-                canvas.height = h;
-                const newCols = Math.floor(w / fontSize);
-                while (drops.length < newCols) drops.push(Math.random() * -50);
-                drops.length = newCols;
-                cols = newCols;
+                canvas.width = w; canvas.height = h;
+                const nc = Math.floor(w/fontSize);
+                while (drops.length < nc) drops.push(Math.random()*-50);
+                drops.length = nc;
             }
         }
-
         function draw() {
             syncSize();
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            drops.forEach((y, i) => {
-                const bright = Math.random() > 0.9;
-                ctx.fillStyle = bright ? '#ffffff' : (Math.random() > 0.5 ? '#00ff41' : '#00aa22');
-                ctx.font = `${bright ? 'bold ' : ''}${fontSize}px monospace`;
-                ctx.fillText(matrixChars[Math.floor(Math.random() * matrixChars.length)], i * fontSize, y * fontSize);
-                if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i] += 0.5;
+            ctx.fillStyle='rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+            drops.forEach((y,i) => {
+                const bright = Math.random()>0.9;
+                ctx.fillStyle = bright?'#ffffff':(Math.random()>0.5?'#00ff41':'#00aa22');
+                ctx.font = `${bright?'bold ':''}${fontSize}px monospace`;
+                ctx.fillText(matrixChars[Math.floor(Math.random()*matrixChars.length)],i*fontSize,y*fontSize);
+                if (y*fontSize>canvas.height&&Math.random()>0.975) drops[i]=0;
+                drops[i]+=0.5;
             });
             matrixRAF = requestAnimationFrame(draw);
         }
         draw();
     }
-
     function stopMatrix() {
-        if (matrixRAF) { cancelAnimationFrame(matrixRAF); matrixRAF = null; }
+        if (matrixRAF) { cancelAnimationFrame(matrixRAF); matrixRAF=null; }
         const ctx = document.getElementById('matrixCanvas').getContext('2d');
-        ctx.clearRect(0, 0, 9999, 9999);
+        ctx.clearRect(0,0,9999,9999);
     }
-
-    document.getElementById('composerSpeed').addEventListener('input', function () {
-        document.getElementById('composerSpeedVal').textContent = parseFloat(this.value).toFixed(1) + '×';
-    });
-    document.getElementById('verbsSpeed').addEventListener('input', function () {
-        document.getElementById('verbsSpeedVal').textContent = parseFloat(this.value).toFixed(1) + '×';
-    });
-
-    document.getElementById('debugPanel').addEventListener('toggle', function () {
+    document.getElementById('debugPanel').addEventListener('toggle', function() {
         this.open ? startMatrix() : stopMatrix();
     });
 </script>
-
 </body>
 </html>
