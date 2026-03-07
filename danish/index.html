@@ -293,6 +293,14 @@ const MM_GID   = () => document.getElementById('minimaxGroupId').value.trim();
 const ACTIVE_TTS = () => document.getElementById('activeTts').value;
 
 const audioCache = {};
+let currentAudio = null;
+
+function stopCurrentAudio() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+    }
+}
 
 // ── Voice lists ──
 const VOICES = {
@@ -628,7 +636,14 @@ async function speakElevenLabs(text, btn, slow, speedId) {
     const modelId = document.getElementById('elevenModel').value;
     const rate = parseFloat(document.getElementById(speedId).value);
     const cacheKey = `el_${modelId}_${voiceId}_${slow?'s':'n'}_${text}`;
-    if (audioCache[cacheKey]) { audioCache[cacheKey].currentTime=0; audioCache[cacheKey].playbackRate=rate; audioCache[cacheKey].play(); return; }
+    if (audioCache[cacheKey]) {
+        stopCurrentAudio();
+        audioCache[cacheKey].currentTime=0;
+        audioCache[cacheKey].playbackRate=rate;
+        currentAudio = audioCache[cacheKey];
+        audioCache[cacheKey].play();
+        return;
+    }
     const thinkEl = btn ? btn.parentElement.querySelector('span') : document.getElementById('listenThinking');
     if (thinkEl) thinkEl.classList.remove('hidden');
     try {
@@ -637,8 +652,12 @@ async function speakElevenLabs(text, btn, slow, speedId) {
             body: JSON.stringify({text, model_id:modelId, voice_settings:{stability:0.5,similarity_boost:0.75,speed:slow?0.7:1.0}})
         });
         if (!res.ok) { const e=await res.json(); logError(`ElevenLabs ${res.status}: ${e.detail?.message||res.statusText}`); if(thinkEl)thinkEl.classList.add('hidden'); return; }
+        stopCurrentAudio();
         const audio = new Audio(URL.createObjectURL(await res.blob()));
-        audio.playbackRate = rate; audioCache[cacheKey]=audio; audio.play();
+        audio.playbackRate = rate;
+        audioCache[cacheKey]=audio;
+        currentAudio = audio;
+        audio.play();
     } catch(e) { logError("Connection failed."); }
     if (thinkEl) thinkEl.classList.add('hidden');
 }
@@ -655,8 +674,10 @@ async function speakMiniMax(text, btn, slow, speedId) {
     const cached = audioCache[cacheKey] || localStorage.getItem('mmcache_' + cacheKey);
     if (cached) {
         audioCache[cacheKey] = cached;
+        stopCurrentAudio();
         const a = new Audio(cached);
         a.playbackRate = rate;
+        currentAudio = a;
         a.play().catch(e => logError(`play() failed: ${e.message}`));
         return;
     }
@@ -690,8 +711,10 @@ async function speakMiniMax(text, btn, slow, speedId) {
         // Save to memory cache and localStorage for persistence across refreshes
         audioCache[cacheKey] = audioUrl;
         localStorage.setItem('mmcache_' + cacheKey, audioUrl);
+        stopCurrentAudio();
         const audio = new Audio(audioUrl);
         audio.playbackRate = rate;
+        currentAudio = audio;
         audio.onerror = e => logError(`MM audio error ${e.target.error?.code}: ${e.target.error?.message}`);
         audio.play().catch(e => logError(`MM play() failed: ${e.name} – ${e.message}`));
     } catch(e) {
