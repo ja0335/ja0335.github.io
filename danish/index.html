@@ -118,7 +118,7 @@
             <div class="api-group-body" id="gmBody">
                 <label>API Key</label>
                 <input type="password" id="geminiKey" placeholder="AIza...">
-                <label>Model</label>
+                <label>LLM Model</label>
                 <select id="geminiModel">
                     <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite – Fastest, most cost-efficient</option>
                     <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash – Best price/performance balance</option>
@@ -181,12 +181,34 @@
             </div>
         </div>
 
+        <!-- Gemini TTS group -->
+        <div class="api-group">
+            <div class="api-group-header" onclick="toggleGroup('gt')">
+                <span>✨ Gemini TTS</span>
+                <span style="display:flex;align-items:center;gap:8px;">
+                    <span class="api-badge" id="gtBadge" style="background:#4285f4;">TTS</span>
+                    <span class="api-group-chevron" id="gtChevron">▼</span>
+                </span>
+            </div>
+            <div class="api-group-body" id="gtBody">
+                <label style="color:var(--text-sub);font-size:0.9em;">Uses same API key as Gemini LLM</label>
+                <label>TTS Model</label>
+                <select id="geminiTtsModel">
+                    <option value="gemini-2.5-pro-tts" selected>Gemini 2.5 Pro TTS – Most expressive, human-like</option>
+                    <option value="gemini-2.5-flash-tts">Gemini 2.5 Flash TTS – Balanced quality & speed</option>
+                    <option value="gemini-2.5-flash-lite-preview-tts">Gemini 2.5 Flash-Lite TTS Preview – Fastest</option>
+                    <option value="legacy">Legacy Neural2 – Perfect pronunciation (robotic but clear)</option>
+                </select>
+            </div>
+        </div>
+
         <!-- Active TTS provider -->
         <div class="provider-select-row">
             <label>Active TTS Provider</label>
             <select id="activeTts">
                 <option value="elevenlabs">🎙️ ElevenLabs</option>
                 <option value="minimax">🤖 MiniMax Audio</option>
+                <option value="gemini">✨ Gemini TTS</option>
             </select>
         </div>
     </div>
@@ -336,6 +358,47 @@ const VOICES = {
         { value: 'Abbess',             label: 'Abbess – Calm, dignified female' },
         { value: 'Sweet_Girl_2',       label: 'Sweet Girl – Light, pleasant female' },
         { value: 'Exuberant_Girl',     label: 'Exuberant Girl – Lively, expressive female' },
+    ],
+    gemini: [
+        // Chirp3-HD (highest quality) - 30 voices
+        { value: 'da-DK-Chirp3-HD-Achernar',     label: '🇩🇰 Chirp3-HD Achernar – Female (best quality)' },
+        { value: 'da-DK-Chirp3-HD-Achird',       label: '🇩🇰 Chirp3-HD Achird – Male' },
+        { value: 'da-DK-Chirp3-HD-Algenib',      label: '🇩🇰 Chirp3-HD Algenib – Male' },
+        { value: 'da-DK-Chirp3-HD-Algieba',      label: '🇩🇰 Chirp3-HD Algieba – Male' },
+        { value: 'da-DK-Chirp3-HD-Alnilam',      label: '🇩🇰 Chirp3-HD Alnilam – Male' },
+        { value: 'da-DK-Chirp3-HD-Aoede',        label: '🇩🇰 Chirp3-HD Aoede – Female' },
+        { value: 'da-DK-Chirp3-HD-Autonoe',      label: '🇩🇰 Chirp3-HD Autonoe – Female' },
+        { value: 'da-DK-Chirp3-HD-Callirrhoe',   label: '🇩🇰 Chirp3-HD Callirrhoe – Female' },
+        { value: 'da-DK-Chirp3-HD-Charon',       label: '🇩🇰 Chirp3-HD Charon – Male' },
+        { value: 'da-DK-Chirp3-HD-Despina',      label: '🇩🇰 Chirp3-HD Despina – Female' },
+        { value: 'da-DK-Chirp3-HD-Enceladus',    label: '🇩🇰 Chirp3-HD Enceladus – Male' },
+        { value: 'da-DK-Chirp3-HD-Erinome',      label: '🇩🇰 Chirp3-HD Erinome – Female' },
+        { value: 'da-DK-Chirp3-HD-Fenrir',       label: '🇩🇰 Chirp3-HD Fenrir – Male' },
+        { value: 'da-DK-Chirp3-HD-Gacrux',       label: '🇩🇰 Chirp3-HD Gacrux – Female' },
+        { value: 'da-DK-Chirp3-HD-Iapetus',      label: '🇩🇰 Chirp3-HD Iapetus – Male' },
+        { value: 'da-DK-Chirp3-HD-Kore',         label: '🇩🇰 Chirp3-HD Kore – Female' },
+        { value: 'da-DK-Chirp3-HD-Laomedeia',    label: '🇩🇰 Chirp3-HD Laomedeia – Female' },
+        { value: 'da-DK-Chirp3-HD-Leda',         label: '🇩🇰 Chirp3-HD Leda – Female' },
+        { value: 'da-DK-Chirp3-HD-Orus',         label: '🇩🇰 Chirp3-HD Orus – Male' },
+        { value: 'da-DK-Chirp3-HD-Puck',         label: '🇩🇰 Chirp3-HD Puck – Male' },
+        { value: 'da-DK-Chirp3-HD-Pulcherrima',  label: '🇩🇰 Chirp3-HD Pulcherrima – Female' },
+        { value: 'da-DK-Chirp3-HD-Rasalgethi',   label: '🇩🇰 Chirp3-HD Rasalgethi – Male' },
+        { value: 'da-DK-Chirp3-HD-Sadachbia',    label: '🇩🇰 Chirp3-HD Sadachbia – Male' },
+        { value: 'da-DK-Chirp3-HD-Sadaltager',   label: '🇩🇰 Chirp3-HD Sadaltager – Male' },
+        { value: 'da-DK-Chirp3-HD-Schedar',      label: '🇩🇰 Chirp3-HD Schedar – Male' },
+        { value: 'da-DK-Chirp3-HD-Sulafat',      label: '🇩🇰 Chirp3-HD Sulafat – Female' },
+        { value: 'da-DK-Chirp3-HD-Umbriel',      label: '🇩🇰 Chirp3-HD Umbriel – Male' },
+        { value: 'da-DK-Chirp3-HD-Vindemiatrix', label: '🇩🇰 Chirp3-HD Vindemiatrix – Female' },
+        { value: 'da-DK-Chirp3-HD-Zephyr',      label: '🇩🇰 Chirp3-HD Zephyr – Female' },
+        { value: 'da-DK-Chirp3-HD-Zubenelgenubi', label: '🇩🇰 Chirp3-HD Zubenelgenubi – Male' },
+        // Neural2
+        { value: 'da-DK-Neural2-F', label: '🇩🇰 Neural2 F – Female' },
+        // WaveNet
+        { value: 'da-DK-Wavenet-F', label: '🇩🇰 WaveNet F – Female (premium)' },
+        { value: 'da-DK-Wavenet-G', label: '🇩🇰 WaveNet G – Male (premium)' },
+        // Standard
+        { value: 'da-DK-Standard-F', label: '🇩🇰 Standard F – Female' },
+        { value: 'da-DK-Standard-G', label: '🇩🇰 Standard G – Male' },
     ]
 };
 
@@ -408,6 +471,7 @@ function updateProviderBadges() {
     const p = ACTIVE_TTS();
     document.getElementById('elBadge').style.background = p === 'elevenlabs' ? 'var(--dk-red)' : 'var(--input-border)';
     document.getElementById('mmBadge').style.background = p === 'minimax'     ? 'var(--accent-blue)' : 'var(--input-border)';
+    document.getElementById('gtBadge').style.background = p === 'gemini'      ? '#4285f4' : 'var(--input-border)';
     populateVoiceSelects(p, localStorage.getItem('lastVoice_'+p));
 }
 
@@ -421,7 +485,7 @@ function lsLoad(id, key, isChecked=false) {
 // ── On load ──
 window.onload = () => {
     updateTenseDesc();
-    lsLoad('geminiKey','geminiKey'); lsLoad('geminiModel','geminiModel');
+    lsLoad('geminiKey','geminiKey'); lsLoad('geminiModel','geminiModel'); lsLoad('geminiTtsModel','geminiTtsModel');
     lsLoad('elevenKey','elevenKey'); lsLoad('elevenModel','elevenModel');
     lsLoad('minimaxKey','minimaxKey'); lsLoad('minimaxGroupId','minimaxGroupId'); lsLoad('minimaxModel','minimaxModel');
     lsLoad('activeTts','activeTts');
@@ -464,7 +528,7 @@ window.onload = () => {
 };
 
 // ── Auto-save inputs ──
-['geminiKey','geminiModel','elevenKey','elevenModel','minimaxKey','minimaxGroupId','minimaxModel'].forEach(id => {
+['geminiKey','geminiModel','geminiTtsModel','elevenKey','elevenModel','minimaxKey','minimaxGroupId','minimaxModel'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => lsSave(id, document.getElementById(id).value));
 });
 document.getElementById('activeTts').addEventListener('change', () => { lsSave('activeTts', ACTIVE_TTS()); updateProviderBadges(); });
@@ -627,6 +691,7 @@ document.getElementById('listenSlowBtn').onclick = () => { const t = document.ge
 // ── speak router ──
 async function speak(text, btn=null, slow=false, speedId='verbsSpeed') {
     if (ACTIVE_TTS() === 'elevenlabs') await speakElevenLabs(text, btn, slow, speedId);
+    else if (ACTIVE_TTS() === 'gemini') await speakGeminiTTS(text, btn, slow, speedId);
     else await speakMiniMax(text, btn, slow, speedId);
 }
 
@@ -720,6 +785,60 @@ async function speakMiniMax(text, btn, slow, speedId) {
     } catch(e) {
         logError("MiniMax request failed: " + e.message);
     }
+    if (thinkEl) thinkEl.classList.add('hidden');
+}
+
+async function speakGeminiTTS(text, btn, slow, speedId) {
+    if (!requireKey(G_KEY,'Gemini')) return;
+    const voiceId = document.getElementById('voiceSelectVerbs').value;
+    const ttsModel = document.getElementById('geminiTtsModel').value;
+    const rate = parseFloat(document.getElementById(speedId).value);
+    const cacheKey = `gt_${ttsModel}_${voiceId}_${slow?'s':'n'}_${text}`;
+    if (audioCache[cacheKey]) {
+        stopCurrentAudio();
+        audioCache[cacheKey].currentTime=0;
+        audioCache[cacheKey].playbackRate=rate;
+        currentAudio = audioCache[cacheKey];
+        audioCache[cacheKey].play();
+        return;
+    }
+    const thinkEl = btn ? btn.parentElement.querySelector('span') : document.getElementById('listenThinking');
+    if (thinkEl) thinkEl.classList.remove('hidden');
+    try {
+        const body = {
+            input: { text: text },
+            voice: { languageCode: 'da-DK', name: voiceId },
+            audioConfig: {
+                audioEncoding: 'MP3',
+                speakingRate: slow ? 0.75 : 1.0,
+                pitch: 0
+            }
+        };
+        document.getElementById('debugQuery').textContent = JSON.stringify(body, null, 2);
+        const res = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${G_KEY()}`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        document.getElementById('debugReply').textContent = JSON.stringify(data, null, 2);
+        if (!res.ok || !data.audioContent) {
+            logError(`Gemini TTS: ${data.error?.message || res.statusText}`);
+            if(thinkEl) thinkEl.classList.add('hidden');
+            return;
+        }
+        const audioBytes = atob(data.audioContent);
+        const audioArray = new Uint8Array(audioBytes.length);
+        for (let i = 0; i < audioBytes.length; i++) {
+            audioArray[i] = audioBytes.charCodeAt(i);
+        }
+        const audioBlob = new Blob([audioArray], { type: 'audio/mpeg' });
+        stopCurrentAudio();
+        const audio = new Audio(URL.createObjectURL(audioBlob));
+        audio.playbackRate = rate;
+        audioCache[cacheKey]=audio;
+        currentAudio = audio;
+        audio.play();
+    } catch(e) { logError("Gemini TTS request failed: "+e.message); }
     if (thinkEl) thinkEl.classList.add('hidden');
 }
 
