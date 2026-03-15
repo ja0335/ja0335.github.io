@@ -199,6 +199,10 @@
                     <option value="gemini-2.5-flash-lite-preview-tts">Gemini 2.5 Flash-Lite TTS Preview – Fastest</option>
                     <option value="legacy">Legacy Neural2 – Perfect pronunciation (robotic but clear)</option>
                 </select>
+                <label>Cloud Function Password</label>
+                <input type="password" id="geminiTtsPassword" placeholder="Enter Cloud Function password">
+                <label>Tone Prompt</label>
+                <input type="text" id="geminiTtsPrompt" value="Read aloud in a warm, welcoming tone." placeholder="e.g., Read aloud in a warm, welcoming tone.">
             </div>
         </div>
 
@@ -485,7 +489,7 @@ function lsLoad(id, key, isChecked=false) {
 // ── On load ──
 window.onload = () => {
     updateTenseDesc();
-    lsLoad('geminiKey','geminiKey'); lsLoad('geminiModel','geminiModel'); lsLoad('geminiTtsModel','geminiTtsModel');
+    lsLoad('geminiKey','geminiKey'); lsLoad('geminiModel','geminiModel'); lsLoad('geminiTtsModel','geminiTtsModel'); lsLoad('geminiTtsPassword','geminiTtsPassword'); lsLoad('geminiTtsPrompt','geminiTtsPrompt');
     lsLoad('elevenKey','elevenKey'); lsLoad('elevenModel','elevenModel');
     lsLoad('minimaxKey','minimaxKey'); lsLoad('minimaxGroupId','minimaxGroupId'); lsLoad('minimaxModel','minimaxModel');
     lsLoad('activeTts','activeTts');
@@ -528,7 +532,7 @@ window.onload = () => {
 };
 
 // ── Auto-save inputs ──
-['geminiKey','geminiModel','geminiTtsModel','elevenKey','elevenModel','minimaxKey','minimaxGroupId','minimaxModel'].forEach(id => {
+['geminiKey','geminiModel','geminiTtsModel','geminiTtsPassword','geminiTtsPrompt','elevenKey','elevenModel','minimaxKey','minimaxGroupId','minimaxModel'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => lsSave(id, document.getElementById(id).value));
 });
 document.getElementById('activeTts').addEventListener('change', () => { lsSave('activeTts', ACTIVE_TTS()); updateProviderBadges(); });
@@ -789,11 +793,20 @@ async function speakMiniMax(text, btn, slow, speedId) {
 }
 
 async function speakGeminiTTS(text, btn, slow, speedId) {
-    if (!requireKey(G_KEY,'Gemini')) return;
+    const password = document.getElementById('geminiTtsPassword').value;
+    const prompt = document.getElementById('geminiTtsPrompt').value;
+    if (!password) {
+        logError("Gemini TTS: Please enter Cloud Function password in settings");
+        return;
+    }
     const voiceId = document.getElementById('voiceSelectVerbs').value;
     const ttsModel = document.getElementById('geminiTtsModel').value;
     const rate = parseFloat(document.getElementById(speedId).value);
+    // Extract just the star name (last part after hyphen) for non-legacy models
+    const name = ttsModel === 'legacy' ? voiceId : voiceId.split('-').pop();
     const cacheKey = `gt_${ttsModel}_${voiceId}_${slow?'s':'n'}_${text}`;
+
+    // Check memory cache first, then localStorage
     if (audioCache[cacheKey]) {
         stopCurrentAudio();
         audioCache[cacheKey].currentTime=0;
@@ -802,21 +815,40 @@ async function speakGeminiTTS(text, btn, slow, speedId) {
         audioCache[cacheKey].play();
         return;
     }
+    const cachedBase64 = localStorage.getItem('gtcache_' + cacheKey);
+    if (cachedBase64) {
+        const audioBytes = atob(cachedBase64);
+        const audioArray = new Uint8Array(audioBytes.length);
+        for (let i = 0; i < audioBytes.length; i++) {
+            audioArray[i] = audioBytes.charCodeAt(i);
+        }
+        const audioBlob = new Blob([audioArray], { type: 'audio/wav' });
+        stopCurrentAudio();
+        const audio = new Audio(URL.createObjectURL(audioBlob));
+        audio.playbackRate = rate;
+        audioCache[cacheKey] = audio;
+        currentAudio = audio;
+        audio.play();
+        return;
+    }
+
     const thinkEl = btn ? btn.parentElement.querySelector('span') : document.getElementById('listenThinking');
     if (thinkEl) thinkEl.classList.remove('hidden');
     try {
         const body = {
-            input: { text: text },
-            voice: { languageCode: 'da-DK', name: voiceId },
-            audioConfig: {
-                audioEncoding: 'MP3',
-                speakingRate: slow ? 0.75 : 1.0,
-                pitch: 0
-            }
+            text: text,
+            prompt: prompt,
+            model: ttsModel,
+            name: name,
+            speakingRate: slow ? 0.75 : 1.0
         };
         document.getElementById('debugQuery').textContent = JSON.stringify(body, null, 2);
-        const res = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${G_KEY()}`, {
-            method:'POST', headers:{'Content-Type':'application/json'},
+        const res = await fetch('https://gemini-tts-simple-382354259640.europe-west1.run.app', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-App-Password': password
+            },
             body: JSON.stringify(body)
         });
         const data = await res.json();
@@ -831,11 +863,14 @@ async function speakGeminiTTS(text, btn, slow, speedId) {
         for (let i = 0; i < audioBytes.length; i++) {
             audioArray[i] = audioBytes.charCodeAt(i);
         }
-        const audioBlob = new Blob([audioArray], { type: 'audio/mpeg' });
-        stopCurrentAudio();
-        const audio = new Audio(URL.createObjectURL(audioBlob));
+        const audioBlob = new Blob([audioArray], { type: 'audio/wav' });
+        // Save to memory cache and localStorage for persistence across refreshes
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
         audio.playbackRate = rate;
-        audioCache[cacheKey]=audio;
+        audioCache[cacheKey] = audio;
+        localStorage.setItem('gtcache_' + cacheKey, data.audioContent);
+        stopCurrentAudio();
         currentAudio = audio;
         audio.play();
     } catch(e) { logError("Gemini TTS request failed: "+e.message); }
