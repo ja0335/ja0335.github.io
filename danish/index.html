@@ -482,19 +482,6 @@ function speakGeminiTTSWait(text, voiceId, rate, thinkEl) {
             a.play();
             return;
         }
-        const cachedBase64 = localStorage.getItem('gtcache_' + cacheKey);
-        if (cachedBase64) {
-            const audioBytes = atob(cachedBase64);
-            const audioArray = new Uint8Array(audioBytes.length);
-            for (let i = 0; i < audioBytes.length; i++) audioArray[i] = audioBytes.charCodeAt(i);
-            stopCurrentAudio();
-            const audio = new Audio(URL.createObjectURL(new Blob([audioArray], { type: 'audio/wav' })));
-            audio.playbackRate = rate; audioCache[cacheKey] = audio; currentAudio = audio;
-            audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
-            audio.onerror = () => reject('error');
-            audio.play();
-            return;
-        }
         if (thinkEl) thinkEl.classList.remove('hidden');
         try {
             const res = await fetch('https://gemini-tts-simple-382354259640.europe-west1.run.app', {
@@ -512,7 +499,6 @@ function speakGeminiTTSWait(text, voiceId, rate, thinkEl) {
             const audio = new Audio(URL.createObjectURL(new Blob([audioArray], { type: 'audio/wav' })));
             audio.playbackRate = rate; audioCache[cacheKey] = audio;
             tabAudioKeys['conversation'].push(cacheKey);
-            localStorage.setItem('gtcache_' + cacheKey, data.audioContent);
             currentAudio = audio;
             audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
             audio.onerror = () => reject('error');
@@ -622,7 +608,6 @@ function flushAudioCache(tab) {
     tabAudioKeys[tab].forEach(key => {
         delete audioCache[key];
         localStorage.removeItem('mmcache_' + key);
-        localStorage.removeItem('gtcache_' + key);
     });
     tabAudioKeys[tab] = [];
 }
@@ -936,13 +921,13 @@ function renderItems(items, displayId, hideCheckId) {
 
         const btnDiv = document.createElement('div');
         btnDiv.style.cssText = "display:flex;align-items:center;gap:10px;margin-top:5px;";
-        const voice = item.speaker ? (document.getElementById('voiceSelectConv'+item.speaker)||document.getElementById('voiceSelectConvA')).value : null;
+        const getVoice = () => item.speaker ? (document.getElementById('voiceSelectConv'+item.speaker)||document.getElementById('voiceSelectConvA')).value : null;
         const normalBtn = document.createElement('button');
         normalBtn.className='btn-blue'; normalBtn.style.flex='none'; normalBtn.textContent='🔊 Listen';
-        normalBtn.onclick = () => speak(item.dk, normalBtn, false, speedId, voice, pauseBtn);
+        normalBtn.onclick = () => speak(item.dk, normalBtn, false, speedId, getVoice(), pauseBtn);
         const slowBtn = document.createElement('button');
         slowBtn.className='btn-blue'; slowBtn.style.flex='none'; slowBtn.textContent='🐢 Listen';
-        slowBtn.onclick = () => speak(item.dk, slowBtn, true, speedId, voice, pauseBtn);
+        slowBtn.onclick = () => speak(item.dk, slowBtn, true, speedId, getVoice(), pauseBtn);
         const pauseBtn = document.createElement('button');
         pauseBtn.className='btn-pause btn-blue'; pauseBtn.style.flex='none'; pauseBtn.innerHTML=ICON_PAUSE; pauseBtn.disabled=true;
         pauseBtn.onclick = () => { if (!currentAudio) return; if (currentAudio.paused) { currentAudio.play(); pauseBtn.innerHTML=ICON_PAUSE; } else { currentAudio.pause(); pauseBtn.innerHTML=ICON_PLAY; } };
@@ -1166,23 +1151,6 @@ async function speakGeminiTTS(text, btn, slow, speedId, voiceId=null, pauseBtn=n
         audioCache[cacheKey].play();
         return;
     }
-    const cachedBase64 = localStorage.getItem('gtcache_' + cacheKey);
-    if (cachedBase64) {
-        const audioBytes = atob(cachedBase64);
-        const audioArray = new Uint8Array(audioBytes.length);
-        for (let i = 0; i < audioBytes.length; i++) {
-            audioArray[i] = audioBytes.charCodeAt(i);
-        }
-        const audioBlob = new Blob([audioArray], { type: 'audio/wav' });
-        stopCurrentAudio();
-        const audio = new Audio(URL.createObjectURL(audioBlob));
-        audio.playbackRate = rate;
-        audioCache[cacheKey] = audio;
-        currentAudio = audio;
-        activatePauseBtn(pauseBtn, currentAudio);
-        audio.play();
-        return;
-    }
 
     const thinkEl = btn ? btn.parentElement.querySelector('span') : document.getElementById('listenThinking');
     if (thinkEl) thinkEl.classList.remove('hidden');
@@ -1216,13 +1184,12 @@ async function speakGeminiTTS(text, btn, slow, speedId, voiceId=null, pauseBtn=n
             audioArray[i] = audioBytes.charCodeAt(i);
         }
         const audioBlob = new Blob([audioArray], { type: 'audio/wav' });
-        // Save to memory cache and localStorage for persistence across refreshes
+        // Save to memory cache
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         audio.playbackRate = rate;
         audioCache[cacheKey] = audio;
         tabAudioKeys[tabFromSpeedId(speedId)].push(cacheKey);
-        localStorage.setItem('gtcache_' + cacheKey, data.audioContent);
         stopCurrentAudio();
         currentAudio = audio;
         activatePauseBtn(pauseBtn, currentAudio);
