@@ -364,16 +364,16 @@ function activatePauseBtn(pb, audio) {
 
 let isPlayingConv = false;
 
-function speakAndWait(text, voiceId, speedId) {
+function speakAndWait(text, voiceId, speedId, thinkEl=null) {
     if (!isPlayingConv) return Promise.reject('stopped');
     const provider = ACTIVE_TTS();
     const rate = parseFloat(document.getElementById(speedId).value);
-    if (provider === 'elevenlabs') return speakElevenLabsWait(text, voiceId, rate);
-    else if (provider === 'gemini') return speakGeminiTTSWait(text, voiceId, rate);
-    else return speakMiniMaxWait(text, voiceId, rate);
+    if (provider === 'elevenlabs') return speakElevenLabsWait(text, voiceId, rate, thinkEl);
+    else if (provider === 'gemini') return speakGeminiTTSWait(text, voiceId, rate, thinkEl);
+    else return speakMiniMaxWait(text, voiceId, rate, thinkEl);
 }
 
-function speakElevenLabsWait(text, voiceId, rate) {
+function speakElevenLabsWait(text, voiceId, rate, thinkEl) {
     return new Promise(async (resolve, reject) => {
         if (!isPlayingConv) { reject('stopped'); return; }
         if (!requireKey(E_KEY,'ElevenLabs')) { reject('nokey'); return; }
@@ -388,11 +388,13 @@ function speakElevenLabsWait(text, voiceId, rate) {
             a.play();
             return;
         }
+        if (thinkEl) thinkEl.classList.remove('hidden');
         try {
             const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
                 method:'POST', headers:{'xi-api-key':E_KEY(),'Content-Type':'application/json'},
                 body: JSON.stringify({text, model_id:modelId, voice_settings:{stability:0.5,similarity_boost:0.75,speed:1.0}})
             });
+            if (thinkEl) thinkEl.classList.add('hidden');
             if (!res.ok) { reject('api'); return; }
             stopCurrentAudio();
             const audio = new Audio(URL.createObjectURL(await res.blob()));
@@ -407,7 +409,7 @@ function speakElevenLabsWait(text, voiceId, rate) {
     });
 }
 
-function speakMiniMaxWait(text, voiceId, rate) {
+function speakMiniMaxWait(text, voiceId, rate, thinkEl) {
     return new Promise(async (resolve, reject) => {
         if (!isPlayingConv) { reject('stopped'); return; }
         if (!requireKey(MM_KEY,'MiniMax')) { reject('nokey'); return; }
@@ -424,6 +426,7 @@ function speakMiniMaxWait(text, voiceId, rate) {
             a.play().catch(() => reject('error'));
             return;
         }
+        if (thinkEl) thinkEl.classList.remove('hidden');
         try {
             const res = await fetch(`https://api-uw.minimax.io/v1/t2a_v2?GroupId=${MM_GID()}`, {
                 method: 'POST',
@@ -433,6 +436,7 @@ function speakMiniMaxWait(text, voiceId, rate) {
                     audio_setting: { sample_rate: 32000, bitrate: 128000, format: "mp3", channel: 1 } })
             });
             const data = await res.json();
+            if (thinkEl) thinkEl.classList.add('hidden');
             if (!res.ok || !data.data?.audio) { reject('api'); return; }
             const audioUrl = data.data.audio;
             audioCache[cacheKey] = audioUrl;
@@ -447,7 +451,7 @@ function speakMiniMaxWait(text, voiceId, rate) {
     });
 }
 
-function speakGeminiTTSWait(text, voiceId, rate) {
+function speakGeminiTTSWait(text, voiceId, rate, thinkEl) {
     return new Promise(async (resolve, reject) => {
         if (!isPlayingConv) { reject('stopped'); return; }
         const password = document.getElementById('geminiTtsPassword').value;
@@ -477,6 +481,7 @@ function speakGeminiTTSWait(text, voiceId, rate) {
             audio.play();
             return;
         }
+        if (thinkEl) thinkEl.classList.remove('hidden');
         try {
             const res = await fetch('https://gemini-tts-simple-382354259640.europe-west1.run.app', {
                 method: 'POST',
@@ -484,6 +489,7 @@ function speakGeminiTTSWait(text, voiceId, rate) {
                 body: JSON.stringify({ text, prompt, model: ttsModel, name, speakingRate: 1.0 })
             });
             const data = await res.json();
+            if (thinkEl) thinkEl.classList.add('hidden');
             if (!res.ok || !data.audioContent) { reject('api'); return; }
             const audioBytes = atob(data.audioContent);
             const audioArray = new Uint8Array(audioBytes.length);
@@ -523,9 +529,10 @@ async function playConversation() {
         const item = items[i];
         const voiceId = item.speaker ? document.getElementById('voiceSelectConv' + item.speaker).value : null;
         if (rows[i]) rows[i].classList.add('row-playing');
+        const thinkEl = rows[i] ? rows[i].querySelector('span') : null;
         try {
-            await speakAndWait(item.dk, voiceId, 'convSpeed');
-        } catch(e) { break; }
+            await speakAndWait(item.dk, voiceId, 'convSpeed', thinkEl);
+        } catch(e) { if (thinkEl) thinkEl.classList.add('hidden'); break; }
         if (rows[i]) rows[i].classList.remove('row-playing');
     }
     stopConversation();
