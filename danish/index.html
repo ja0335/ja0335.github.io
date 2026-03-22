@@ -265,7 +265,16 @@
             <label for="convCount" style="white-space:nowrap;color:var(--text-sub);font-size:0.95rem;">Number of lines:</label>
             <input type="number" id="convCount" value="10" min="2" max="50" style="margin-bottom:0;width:80px;">
         </div>
-        <select id="voiceSelectConv"></select>
+        <div style="display:flex;gap:10px;">
+            <div style="flex:1;">
+                <div style="font-size:0.85rem;color:var(--text-sub);margin-bottom:4px;font-weight:bold;">🧑 Person A</div>
+                <select id="voiceSelectConvA"></select>
+            </div>
+            <div style="flex:1;">
+                <div style="font-size:0.85rem;color:var(--text-sub);margin-bottom:4px;font-weight:bold;">👤 Person B</div>
+                <select id="voiceSelectConvB"></select>
+            </div>
+        </div>
         <div style="display:flex;align-items:center;gap:10px;">
             <button class="btn-main" id="convGenBtn" style="flex:none;padding:14px 24px;">Generate</button>
             <label id="hideTextLabelConv" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-blue);color:white;padding:0 16px;border-radius:10px;align-self:stretch;cursor:pointer;font-weight:bold;white-space:nowrap;user-select:none;">
@@ -432,7 +441,8 @@ const VOICES = {
     ]
 };
 
-const VOICE_SELECT_IDS = ['voiceSelectVerbs','voiceSelectConv','voiceSelectComposer'];
+const VOICE_SELECT_IDS = ['voiceSelectVerbs','voiceSelectComposer'];
+const CONV_VOICE_IDS = ['voiceSelectConvA','voiceSelectConvB'];
 
 function populateVoiceSelects(provider, savedValue) {
     const voices = VOICES[provider];
@@ -440,6 +450,12 @@ function populateVoiceSelects(provider, savedValue) {
         const sel = document.getElementById(id);
         sel.innerHTML = voices.map(v => `<option value="${v.value}">${v.label}</option>`).join('');
         if (savedValue && voices.find(v => v.value === savedValue)) sel.value = savedValue;
+    });
+    CONV_VOICE_IDS.forEach((id, i) => {
+        const sel = document.getElementById(id);
+        sel.innerHTML = voices.map(v => `<option value="${v.value}">${v.label}</option>`).join('');
+        const convSaved = localStorage.getItem('lastVoiceConv' + (i===0?'A':'B') + '_' + provider);
+        if (convSaved && voices.find(v => v.value === convSaved)) sel.value = convSaved;
     });
 }
 
@@ -577,6 +593,11 @@ VOICE_SELECT_IDS.forEach(id => {
         VOICE_SELECT_IDS.filter(x => x !== id).forEach(other => document.getElementById(other).value = this.value);
     });
 });
+CONV_VOICE_IDS.forEach((id, i) => {
+    document.getElementById(id).addEventListener('change', function() {
+        lsSave('lastVoiceConv' + (i===0?'A':'B') + '_' + ACTIVE_TTS(), this.value);
+    });
+});
 
 // Speed sliders
 [['verbsSpeed','verbsSpeedVal'],['convSpeed','convSpeedVal'],['composerSpeed','composerSpeedVal']].forEach(([slId, valId, lsKey]) => {
@@ -633,12 +654,13 @@ function renderItems(items, displayId, hideCheckId) {
 
         const btnDiv = document.createElement('div');
         btnDiv.style.cssText = "display:flex;align-items:center;gap:10px;margin-top:5px;";
+        const voice = item.speaker ? document.getElementById('voiceSelectConv' + item.speaker).value : null;
         const normalBtn = document.createElement('button');
         normalBtn.className='btn-blue'; normalBtn.style.flex='none'; normalBtn.textContent='🔊 Listen';
-        normalBtn.onclick = () => speak(item.dk, normalBtn, false, speedId);
+        normalBtn.onclick = () => speak(item.dk, normalBtn, false, speedId, voice);
         const slowBtn = document.createElement('button');
         slowBtn.className='btn-blue'; slowBtn.style.flex='none'; slowBtn.textContent='🐢 Listen';
-        slowBtn.onclick = () => speak(item.dk, slowBtn, true, speedId);
+        slowBtn.onclick = () => speak(item.dk, slowBtn, true, speedId, voice);
         const thinking = document.createElement('span');
         thinking.className='hidden'; thinking.style.cssText="font-size:0.85em;color:var(--text-sub);";
         thinking.textContent='🎙️ Sending request...';
@@ -724,15 +746,15 @@ document.getElementById('listenBtn').onclick = () => { const t = document.getEle
 document.getElementById('listenSlowBtn').onclick = () => { const t = document.getElementById('composerIn').value; if(t) speak(t,null,true,'composerSpeed'); };
 
 // ── speak router ──
-async function speak(text, btn=null, slow=false, speedId='verbsSpeed') {
-    if (ACTIVE_TTS() === 'elevenlabs') await speakElevenLabs(text, btn, slow, speedId);
-    else if (ACTIVE_TTS() === 'gemini') await speakGeminiTTS(text, btn, slow, speedId);
-    else await speakMiniMax(text, btn, slow, speedId);
+async function speak(text, btn=null, slow=false, speedId='verbsSpeed', voiceId=null) {
+    if (ACTIVE_TTS() === 'elevenlabs') await speakElevenLabs(text, btn, slow, speedId, voiceId);
+    else if (ACTIVE_TTS() === 'gemini') await speakGeminiTTS(text, btn, slow, speedId, voiceId);
+    else await speakMiniMax(text, btn, slow, speedId, voiceId);
 }
 
-async function speakElevenLabs(text, btn, slow, speedId) {
+async function speakElevenLabs(text, btn, slow, speedId, voiceId=null) {
     if (!requireKey(E_KEY,'ElevenLabs')) return;
-    const voiceId = document.getElementById('voiceSelectVerbs').value;
+    voiceId = voiceId || document.getElementById('voiceSelectVerbs').value;
     const modelId = document.getElementById('elevenModel').value;
     const rate = parseFloat(document.getElementById(speedId).value);
     const cacheKey = `el_${modelId}_${voiceId}_${slow?'s':'n'}_${text}`;
@@ -763,10 +785,10 @@ async function speakElevenLabs(text, btn, slow, speedId) {
     if (thinkEl) thinkEl.classList.add('hidden');
 }
 
-async function speakMiniMax(text, btn, slow, speedId) {
+async function speakMiniMax(text, btn, slow, speedId, voiceId=null) {
     if (!requireKey(MM_KEY,'MiniMax')) return;
     if (!MM_GID()) { logError("Please enter your MiniMax Group ID in the API Keys tab."); return; }
-    const voiceId = document.getElementById('voiceSelectVerbs').value;
+    voiceId = voiceId || document.getElementById('voiceSelectVerbs').value;
     const modelId = document.getElementById('minimaxModel').value;
     const rate = parseFloat(document.getElementById(speedId).value);
     const cacheKey = `mm_${modelId}_${voiceId}_${slow?'s':'n'}_${text}`;
@@ -825,14 +847,14 @@ async function speakMiniMax(text, btn, slow, speedId) {
     if (thinkEl) thinkEl.classList.add('hidden');
 }
 
-async function speakGeminiTTS(text, btn, slow, speedId) {
+async function speakGeminiTTS(text, btn, slow, speedId, voiceId=null) {
     const password = document.getElementById('geminiTtsPassword').value;
     const prompt = document.getElementById('geminiTtsPrompt').value;
     if (!password) {
         logError("Gemini TTS: Please enter Cloud Function password in settings");
         return;
     }
-    const voiceId = document.getElementById('voiceSelectVerbs').value;
+    voiceId = voiceId || document.getElementById('voiceSelectVerbs').value;
     const ttsModel = document.getElementById('geminiTtsModel').value;
     const rate = parseFloat(document.getElementById(speedId).value);
     // Extract just the star name (last part after hyphen) for non-legacy models
