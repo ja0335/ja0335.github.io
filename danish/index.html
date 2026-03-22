@@ -30,6 +30,7 @@
         .btn-blue { background: var(--accent-blue); color: white; }
         .btn-pause { background: var(--input-border); color: var(--text-sub); }
         .btn-pause:disabled { opacity: 0.4; cursor: not-allowed; }
+        .row-playing { background: rgba(34,197,94,0.25); border-radius: 8px; padding: 8px; margin: -8px; transition: background 0.3s; }
         #errorLog { margin-top: 15px; padding: 10px; background: var(--error-bg); border: 1px solid #ff000033; border-radius: 8px; font-family: monospace; font-size: 0.75rem; color: #ff4444; display: none; word-wrap: break-word; }
         .result-box { background: var(--item-bg); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--item-border); }
         #status { text-align: center; font-weight: bold; margin: 10px 0; font-size: 0.85em; min-height: 20px; }
@@ -277,12 +278,13 @@
                 <select id="voiceSelectConvB"></select>
             </div>
         </div>
-        <div style="display:flex;align-items:center;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
             <button class="btn-main" id="convGenBtn" style="flex:none;padding:14px 24px;">Generate</button>
             <label id="hideTextLabelConv" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent-blue);color:white;padding:0 16px;border-radius:10px;align-self:stretch;cursor:pointer;font-weight:bold;white-space:nowrap;user-select:none;">
                 <input type="checkbox" id="hideTextCheckConv" style="display:none;">
                 <span id="hideTextEmojiConv">🙉</span> <span id="hideTextLabelConv-text">Show text</span>
             </label>
+            <button class="btn-main" id="playConvBtn" style="flex:none;padding:14px 24px;" disabled>▶️ Play Conversation</button>
             <span id="convThinking" class="hidden" style="font-size:0.85em;color:var(--text-sub);">⏳ Gemini is thinking...</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
@@ -358,6 +360,184 @@ function activatePauseBtn(pb, audio) {
         audio.onended = () => { pb.disabled = true; pb.textContent = '⏸️ Pause'; currentPauseBtn = null; };
         currentPauseBtn = pb;
     }
+}
+
+let isPlayingConv = false;
+
+function speakAndWait(text, voiceId, speedId) {
+    if (!isPlayingConv) return Promise.reject('stopped');
+    const provider = ACTIVE_TTS();
+    const rate = parseFloat(document.getElementById(speedId).value);
+    if (provider === 'elevenlabs') return speakElevenLabsWait(text, voiceId, rate);
+    else if (provider === 'gemini') return speakGeminiTTSWait(text, voiceId, rate);
+    else return speakMiniMaxWait(text, voiceId, rate);
+}
+
+function speakElevenLabsWait(text, voiceId, rate) {
+    return new Promise(async (resolve, reject) => {
+        if (!isPlayingConv) { reject('stopped'); return; }
+        if (!requireKey(E_KEY,'ElevenLabs')) { reject('nokey'); return; }
+        const modelId = document.getElementById('elevenModel').value;
+        const cacheKey = `el_${modelId}_${voiceId}_n_${text}`;
+        if (audioCache[cacheKey]) {
+            stopCurrentAudio();
+            const a = audioCache[cacheKey]; a.currentTime=0; a.playbackRate=rate;
+            currentAudio = a;
+            a.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
+            a.onerror = () => reject('error');
+            a.play();
+            return;
+        }
+        try {
+            const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+                method:'POST', headers:{'xi-api-key':E_KEY(),'Content-Type':'application/json'},
+                body: JSON.stringify({text, model_id:modelId, voice_settings:{stability:0.5,similarity_boost:0.75,speed:1.0}})
+            });
+            if (!res.ok) { reject('api'); return; }
+            stopCurrentAudio();
+            const audio = new Audio(URL.createObjectURL(await res.blob()));
+            audio.playbackRate = rate;
+            audioCache[cacheKey] = audio;
+            tabAudioKeys['conversation'].push(cacheKey);
+            currentAudio = audio;
+            audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
+            audio.onerror = () => reject('error');
+            audio.play();
+        } catch(e) { reject('error'); }
+    });
+}
+
+function speakMiniMaxWait(text, voiceId, rate) {
+    return new Promise(async (resolve, reject) => {
+        if (!isPlayingConv) { reject('stopped'); return; }
+        if (!requireKey(MM_KEY,'MiniMax')) { reject('nokey'); return; }
+        if (!MM_GID()) { reject('nogid'); return; }
+        const modelId = document.getElementById('minimaxModel').value;
+        const cacheKey = `mm_${modelId}_${voiceId}_n_${text}`;
+        const cached = audioCache[cacheKey] || localStorage.getItem('mmcache_' + cacheKey);
+        if (cached) {
+            audioCache[cacheKey] = cached;
+            stopCurrentAudio();
+            const a = new Audio(cached); a.playbackRate = rate; currentAudio = a;
+            a.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
+            a.onerror = () => reject('error');
+            a.play().catch(() => reject('error'));
+            return;
+        }
+        try {
+            const res = await fetch(`https://api-uw.minimax.io/v1/t2a_v2?GroupId=${MM_GID()}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${MM_KEY()}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: modelId, text, stream: false, language_boost: "Danish", output_format: "url",
+                    voice_setting: { voice_id: voiceId, speed: 1.0, vol: 1.0, pitch: 0 },
+                    audio_setting: { sample_rate: 32000, bitrate: 128000, format: "mp3", channel: 1 } })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.data?.audio) { reject('api'); return; }
+            const audioUrl = data.data.audio;
+            audioCache[cacheKey] = audioUrl;
+            tabAudioKeys['conversation'].push(cacheKey);
+            localStorage.setItem('mmcache_' + cacheKey, audioUrl);
+            stopCurrentAudio();
+            const audio = new Audio(audioUrl); audio.playbackRate = rate; currentAudio = audio;
+            audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
+            audio.onerror = () => reject('error');
+            audio.play().catch(() => reject('error'));
+        } catch(e) { reject('error'); }
+    });
+}
+
+function speakGeminiTTSWait(text, voiceId, rate) {
+    return new Promise(async (resolve, reject) => {
+        if (!isPlayingConv) { reject('stopped'); return; }
+        const password = document.getElementById('geminiTtsPassword').value;
+        const prompt = document.getElementById('geminiTtsPrompt').value;
+        if (!password) { reject('nopass'); return; }
+        const ttsModel = document.getElementById('geminiTtsModel').value;
+        const name = ttsModel === 'legacy' ? voiceId : voiceId.split('-').pop();
+        const cacheKey = `gt_${ttsModel}_${voiceId}_n_${text}`;
+        if (audioCache[cacheKey]) {
+            stopCurrentAudio();
+            const a = audioCache[cacheKey]; a.currentTime=0; a.playbackRate=rate; currentAudio = a;
+            a.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
+            a.onerror = () => reject('error');
+            a.play();
+            return;
+        }
+        const cachedBase64 = localStorage.getItem('gtcache_' + cacheKey);
+        if (cachedBase64) {
+            const audioBytes = atob(cachedBase64);
+            const audioArray = new Uint8Array(audioBytes.length);
+            for (let i = 0; i < audioBytes.length; i++) audioArray[i] = audioBytes.charCodeAt(i);
+            stopCurrentAudio();
+            const audio = new Audio(URL.createObjectURL(new Blob([audioArray], { type: 'audio/wav' })));
+            audio.playbackRate = rate; audioCache[cacheKey] = audio; currentAudio = audio;
+            audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
+            audio.onerror = () => reject('error');
+            audio.play();
+            return;
+        }
+        try {
+            const res = await fetch('https://gemini-tts-simple-382354259640.europe-west1.run.app', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-App-Password': password },
+                body: JSON.stringify({ text, prompt, model: ttsModel, name, speakingRate: 1.0 })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.audioContent) { reject('api'); return; }
+            const audioBytes = atob(data.audioContent);
+            const audioArray = new Uint8Array(audioBytes.length);
+            for (let i = 0; i < audioBytes.length; i++) audioArray[i] = audioBytes.charCodeAt(i);
+            stopCurrentAudio();
+            const audio = new Audio(URL.createObjectURL(new Blob([audioArray], { type: 'audio/wav' })));
+            audio.playbackRate = rate; audioCache[cacheKey] = audio;
+            tabAudioKeys['conversation'].push(cacheKey);
+            localStorage.setItem('gtcache_' + cacheKey, data.audioContent);
+            currentAudio = audio;
+            audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
+            audio.onerror = () => reject('error');
+            audio.play();
+        } catch(e) { reject('error'); }
+    });
+}
+
+function stopConversation() {
+    isPlayingConv = false;
+    resetPauseBtn();
+    if (currentAudio) { currentAudio.pause(); currentAudio.onended = null; currentAudio = null; }
+    const btn = document.getElementById('playConvBtn');
+    btn.textContent = '▶️ Play Conversation';
+    btn.classList.remove('hidden');
+    document.querySelectorAll('#conv-display .row-playing').forEach(el => el.classList.remove('row-playing'));
+}
+
+async function playConversation() {
+    const items = JSON.parse(localStorage.getItem('lastConv') || '[]');
+    if (!items.length) return;
+    isPlayingConv = true;
+    const btn = document.getElementById('playConvBtn');
+    btn.textContent = '⏹ Stop';
+    const rows = document.querySelectorAll('#conv-display > div');
+    for (let i = 0; i < items.length; i++) {
+        if (!isPlayingConv) break;
+        const item = items[i];
+        const voiceId = item.speaker ? document.getElementById('voiceSelectConv' + item.speaker).value : null;
+        if (rows[i]) rows[i].classList.add('row-playing');
+        try {
+            await speakAndWait(item.dk, voiceId, 'convSpeed');
+        } catch(e) { break; }
+        if (rows[i]) rows[i].classList.remove('row-playing');
+    }
+    stopConversation();
+}
+
+document.getElementById('playConvBtn').onclick = () => {
+    if (isPlayingConv) { stopConversation(); return; }
+    playConversation();
+};
+
+function updatePlayConvBtn() {
+    document.getElementById('playConvBtn').disabled = !localStorage.getItem('lastConv');
 }
 
 function tabFromSpeedId(speedId) {
@@ -500,6 +680,7 @@ function openPanel()  { document.getElementById('sidePanel').classList.add('open
 function closePanel() { document.getElementById('sidePanel').classList.remove('open'); document.getElementById('panelBackdrop').classList.remove('open'); }
 
 function showTab(tabId) {
+    if (isPlayingConv && tabId !== 'conversation') stopConversation();
     ['apikeys','verbs','conversation','composer'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
     ['navApikeys','navVerbs','navConversation','navComposer'].forEach(n => document.getElementById(n).classList.remove('active'));
     document.getElementById('tab-'+tabId).classList.remove('hidden');
@@ -596,6 +777,7 @@ window.onload = () => {
     if (ls) renderItems(JSON.parse(ls), 'verbs-display', 'hideTextCheck');
     const lc = localStorage.getItem('lastConv');
     if (lc) renderItems(JSON.parse(lc), 'conv-display', 'hideTextCheckConv');
+    updatePlayConvBtn();
 };
 
 // ── Auto-save inputs ──
@@ -732,6 +914,7 @@ document.getElementById('convGenBtn').onclick = async () => {
     const topic = document.getElementById('convTopic').value.trim();
     if (!topic) return;
     if (!requireKey(G_KEY,'Gemini')) return;
+    stopConversation();
     flushAudioCache('conversation');
     document.getElementById('convThinking').classList.remove('hidden');
     try {
@@ -746,6 +929,7 @@ Return ONLY a JSON array with no markdown or extra text:
         const items = JSON.parse(text.substring(text.indexOf('['), text.lastIndexOf(']')+1));
         localStorage.setItem('lastConv', JSON.stringify(items));
         renderItems(items, 'conv-display', 'hideTextCheckConv');
+        updatePlayConvBtn();
     } catch(e) { logError("Gemini failed: "+e.message); }
     document.getElementById('convThinking').classList.add('hidden');
 };
