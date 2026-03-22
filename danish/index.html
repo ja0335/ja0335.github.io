@@ -528,7 +528,7 @@ async function playConversation() {
         if (!isPlayingConv) break;
         const item = items[i];
         const voiceId = item.speaker ? document.getElementById('voiceSelectConv' + item.speaker).value : null;
-        if (rows[i]) rows[i].classList.add('row-playing');
+        if (rows[i]) { rows[i].classList.add('row-playing'); rows[i].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
         const thinkEl = rows[i] ? rows[i].querySelector('span') : null;
         try {
             await speakAndWait(item.dk, voiceId, 'convSpeed', thinkEl);
