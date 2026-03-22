@@ -31,6 +31,10 @@
         .btn-pause { background: var(--input-border); color: var(--text-sub); }
         .btn-pause:disabled { opacity: 0.4; cursor: not-allowed; }
         .row-playing { background: rgba(34,197,94,0.25); border-radius: 8px; padding: 8px; margin: -8px; transition: background 0.3s; }
+        .conv-player { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 200; background: var(--card-bg); border: 2px solid var(--dk-red); border-radius: 50px; padding: 8px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; }
+        .conv-player button { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 6px 10px; border-radius: 50%; transition: background 0.15s; line-height: 1; }
+        .conv-player button:hover:not(:disabled) { background: var(--input-border); }
+        .conv-player button:disabled { opacity: 0.3; cursor: not-allowed; }
         #errorLog { margin-top: 15px; padding: 10px; background: var(--error-bg); border: 1px solid #ff000033; border-radius: 8px; font-family: monospace; font-size: 0.75rem; color: #ff4444; display: none; word-wrap: break-word; }
         .result-box { background: var(--item-bg); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--item-border); }
         #status { text-align: center; font-weight: bold; margin: 10px 0; font-size: 0.85em; min-height: 20px; }
@@ -284,7 +288,6 @@
                 <input type="checkbox" id="hideTextCheckConv" style="display:none;">
                 <span id="hideTextEmojiConv">🙉</span> <span id="hideTextLabelConv-text">Show text</span>
             </label>
-            <button class="btn-main" id="playConvBtn" style="flex:none;padding:14px 24px;" disabled>▶️ Play Conversation</button>
             <span id="convThinking" class="hidden" style="font-size:0.85em;color:var(--text-sub);">⏳ Gemini is thinking...</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
@@ -328,6 +331,12 @@
             <pre id="debugReply" style="background:var(--item-bg);border:1px solid var(--item-border);border-radius:8px;padding:10px;white-space:pre-wrap;word-break:break-all;margin:0;"></pre>
         </div>
     </details>
+</div>
+
+<div id="convPlayer" class="conv-player hidden">
+    <button id="cpPlay" title="Play Conversation">▶️</button>
+    <button id="cpPause" title="Pause Conversation" disabled>⏸️</button>
+    <button id="cpStop" title="Stop Conversation" disabled>⏹️</button>
 </div>
 
 <script>
@@ -509,20 +518,21 @@ function speakGeminiTTSWait(text, voiceId, rate, thinkEl) {
 
 function stopConversation() {
     isPlayingConv = false;
+    isConvPaused = false;
     resetPauseBtn();
     if (currentAudio) { currentAudio.pause(); currentAudio.onended = null; currentAudio = null; }
-    const btn = document.getElementById('playConvBtn');
-    btn.textContent = '▶️ Play Conversation';
-    btn.classList.remove('hidden');
     document.querySelectorAll('#conv-display .row-playing').forEach(el => el.classList.remove('row-playing'));
+    updateConvPlayerState();
 }
+
+let isConvPaused = false;
 
 async function playConversation() {
     const items = JSON.parse(localStorage.getItem('lastConv') || '[]');
     if (!items.length) return;
     isPlayingConv = true;
-    const btn = document.getElementById('playConvBtn');
-    btn.textContent = '⏹ Stop';
+    isConvPaused = false;
+    updateConvPlayerState();
     const rows = document.querySelectorAll('#conv-display > div');
     for (let i = 0; i < items.length; i++) {
         if (!isPlayingConv) break;
@@ -538,13 +548,50 @@ async function playConversation() {
     stopConversation();
 }
 
-document.getElementById('playConvBtn').onclick = () => {
-    if (isPlayingConv) { stopConversation(); return; }
-    playConversation();
+function updateConvPlayerVisibility() {
+    const activeTab = localStorage.getItem('lastTab');
+    const hasConv = !!localStorage.getItem('lastConv');
+    document.getElementById('convPlayer').classList.toggle('hidden', !hasConv || activeTab !== 'conversation');
+}
+
+function updateConvPlayerState() {
+    const play = document.getElementById('cpPlay');
+    const pause = document.getElementById('cpPause');
+    const stop = document.getElementById('cpStop');
+    if (!isPlayingConv) {
+        play.disabled = false; pause.disabled = true; stop.disabled = true;
+    } else if (isConvPaused) {
+        play.disabled = false; pause.disabled = true; stop.disabled = false;
+    } else {
+        play.disabled = true; pause.disabled = false; stop.disabled = false;
+    }
+}
+
+document.getElementById('cpPlay').onclick = () => {
+    if (isConvPaused && currentAudio) {
+        currentAudio.play();
+        isConvPaused = false;
+        updateConvPlayerState();
+    } else if (!isPlayingConv) {
+        playConversation();
+    }
+};
+
+document.getElementById('cpPause').onclick = () => {
+    if (currentAudio && !currentAudio.paused) {
+        currentAudio.pause();
+        isConvPaused = true;
+        updateConvPlayerState();
+    }
+};
+
+document.getElementById('cpStop').onclick = () => {
+    stopConversation();
 };
 
 function updatePlayConvBtn() {
-    document.getElementById('playConvBtn').disabled = !localStorage.getItem('lastConv');
+    updateConvPlayerVisibility();
+    updateConvPlayerState();
 }
 
 function tabFromSpeedId(speedId) {
@@ -694,6 +741,7 @@ function showTab(tabId) {
     document.getElementById('nav'+tabId.charAt(0).toUpperCase()+tabId.slice(1)).classList.add('active');
     lsSave('lastTab', tabId);
     closePanel();
+    updateConvPlayerVisibility();
 }
 
 function toggleTheme() {
