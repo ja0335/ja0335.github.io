@@ -326,7 +326,23 @@ const MM_GID   = () => document.getElementById('minimaxGroupId').value.trim();
 const ACTIVE_TTS = () => document.getElementById('activeTts').value;
 
 const audioCache = {};
+const tabAudioKeys = { verbs: [], conversation: [], composer: [] };
 let currentAudio = null;
+
+function tabFromSpeedId(speedId) {
+    if (speedId === 'verbsSpeed') return 'verbs';
+    if (speedId === 'convSpeed') return 'conversation';
+    return 'composer';
+}
+
+function flushAudioCache(tab) {
+    tabAudioKeys[tab].forEach(key => {
+        delete audioCache[key];
+        localStorage.removeItem('mmcache_' + key);
+        localStorage.removeItem('gtcache_' + key);
+    });
+    tabAudioKeys[tab] = [];
+}
 
 function stopCurrentAudio() {
     if (currentAudio) {
@@ -449,6 +465,7 @@ function showTab(tabId) {
     ['navApikeys','navVerbs','navConversation','navComposer'].forEach(n => document.getElementById(n).classList.remove('active'));
     document.getElementById('tab-'+tabId).classList.remove('hidden');
     document.getElementById('nav'+tabId.charAt(0).toUpperCase()+tabId.slice(1)).classList.add('active');
+    lsSave('lastTab', tabId);
     closePanel();
 }
 
@@ -532,7 +549,8 @@ window.onload = () => {
     }
 
     updateTenseDesc();
-    updateProviderBadges(); // populates voices after loading activeTts
+    updateProviderBadges();
+    showTab(localStorage.getItem('lastTab') || 'verbs');
 
     // Restore cached sentences
     const ls = localStorage.getItem('lastSentences');
@@ -647,6 +665,7 @@ document.getElementById('genBtn').onclick = async () => {
     const tense = document.getElementById('tenseIn').value;
     if (!verb) return;
     if (!requireKey(G_KEY,'Gemini')) return;
+    flushAudioCache('verbs');
     document.getElementById('genThinking').classList.remove('hidden');
     try {
         const count = Math.min(50, Math.max(1, parseInt(document.getElementById('verbCount').value)||5));
@@ -665,6 +684,7 @@ document.getElementById('convGenBtn').onclick = async () => {
     const topic = document.getElementById('convTopic').value.trim();
     if (!topic) return;
     if (!requireKey(G_KEY,'Gemini')) return;
+    flushAudioCache('conversation');
     document.getElementById('convThinking').classList.remove('hidden');
     try {
         const count = Math.min(50, Math.max(2, parseInt(document.getElementById('convCount').value)||10));
@@ -687,6 +707,7 @@ document.getElementById('transBtn').onclick = async () => {
     const text = document.getElementById('composerIn').value;
     if (!text) return;
     if (!requireKey(G_KEY,'Gemini')) return;
+    flushAudioCache('composer');
     setStatus("⏳ Translating...");
     try {
         const prompt = `Translate to English: "${text}"`;
@@ -735,6 +756,7 @@ async function speakElevenLabs(text, btn, slow, speedId) {
         const audio = new Audio(URL.createObjectURL(await res.blob()));
         audio.playbackRate = rate;
         audioCache[cacheKey]=audio;
+        tabAudioKeys[tabFromSpeedId(speedId)].push(cacheKey);
         currentAudio = audio;
         audio.play();
     } catch(e) { logError("Connection failed."); }
@@ -789,6 +811,7 @@ async function speakMiniMax(text, btn, slow, speedId) {
         const audioUrl = data.data.audio;
         // Save to memory cache and localStorage for persistence across refreshes
         audioCache[cacheKey] = audioUrl;
+        tabAudioKeys[tabFromSpeedId(speedId)].push(cacheKey);
         localStorage.setItem('mmcache_' + cacheKey, audioUrl);
         stopCurrentAudio();
         const audio = new Audio(audioUrl);
@@ -879,6 +902,7 @@ async function speakGeminiTTS(text, btn, slow, speedId) {
         const audio = new Audio(audioUrl);
         audio.playbackRate = rate;
         audioCache[cacheKey] = audio;
+        tabAudioKeys[tabFromSpeedId(speedId)].push(cacheKey);
         localStorage.setItem('gtcache_' + cacheKey, data.audioContent);
         stopCurrentAudio();
         currentAudio = audio;
