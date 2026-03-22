@@ -540,7 +540,7 @@ async function playConversation() {
     for (let i = 0; i < items.length; i++) {
         if (!isPlayingConv) break;
         const item = items[i];
-        const voiceId = item.speaker ? document.getElementById('voiceSelectConv' + item.speaker).value : null;
+        const voiceId = item.speaker ? (document.getElementById('voiceSelectConv'+item.speaker)||document.getElementById('voiceSelectConvA')).value : null;
         if (rows[i]) { rows[i].classList.add('row-playing'); rows[i].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
         const thinkEl = rows[i] ? rows[i].querySelector('span') : null;
         try {
@@ -920,7 +920,7 @@ function renderItems(items, displayId, hideCheckId) {
 
         const btnDiv = document.createElement('div');
         btnDiv.style.cssText = "display:flex;align-items:center;gap:10px;margin-top:5px;";
-        const voice = item.speaker ? document.getElementById('voiceSelectConv' + item.speaker).value : null;
+        const voice = item.speaker ? (document.getElementById('voiceSelectConv'+item.speaker)||document.getElementById('voiceSelectConvA')).value : null;
         const normalBtn = document.createElement('button');
         normalBtn.className='btn-blue'; normalBtn.style.flex='none'; normalBtn.textContent='🔊 Listen';
         normalBtn.onclick = () => speak(item.dk, normalBtn, false, speedId, voice, pauseBtn);
@@ -988,6 +988,9 @@ Return ONLY a JSON array with no markdown or extra text:
         document.getElementById('debugQuery').textContent = prompt;
         const text = await callGemini(prompt);
         const items = JSON.parse(text.substring(text.indexOf('['), text.lastIndexOf(']')+1));
+        const speakers = [...new Set(items.filter(i=>i.speaker).map(i=>i.speaker))];
+        const speakerMap = {}; speakers.forEach((s,i)=>speakerMap[s]=i===0?'A':'B');
+        items.forEach(item => { if (item.speaker) item.speaker = speakerMap[item.speaker]; });
         localStorage.setItem('lastConv', JSON.stringify(items));
         renderItems(items, 'conv-display', 'hideTextCheckConv');
         updatePlayConvBtn();
