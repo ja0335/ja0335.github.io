@@ -28,6 +28,8 @@
         button { flex: 1; padding: 14px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .btn-main { background: var(--dk-red); color: white; }
         .btn-blue { background: var(--accent-blue); color: white; }
+        .btn-pause { background: var(--input-border); color: var(--text-sub); }
+        .btn-pause:disabled { opacity: 0.4; cursor: not-allowed; }
         #errorLog { margin-top: 15px; padding: 10px; background: var(--error-bg); border: 1px solid #ff000033; border-radius: 8px; font-family: monospace; font-size: 0.75rem; color: #ff4444; display: none; word-wrap: break-word; }
         .result-box { background: var(--item-bg); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--item-border); }
         #status { text-align: center; font-weight: bold; margin: 10px 0; font-size: 0.85em; min-height: 20px; }
@@ -300,6 +302,7 @@
         <div style="display:flex;align-items:center;gap:10px;">
             <button class="btn-blue" id="listenBtn" style="flex:none;">🔊 Listen</button>
             <button class="btn-blue" id="listenSlowBtn" style="flex:none;">🐢 Listen</button>
+            <button class="btn-pause btn-blue" id="composerPauseBtn" style="flex:none;" disabled>⏸️ Pause</button>
             <span id="listenThinking" class="hidden" style="font-size:0.85em;color:var(--text-sub);white-space:nowrap;">🎙️ Sending request...</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
@@ -337,6 +340,25 @@ const ACTIVE_TTS = () => document.getElementById('activeTts').value;
 const audioCache = {};
 const tabAudioKeys = { verbs: [], conversation: [], composer: [] };
 let currentAudio = null;
+let currentPauseBtn = null;
+
+function resetPauseBtn() {
+    if (currentPauseBtn) {
+        currentPauseBtn.disabled = true;
+        currentPauseBtn.textContent = '⏸️ Pause';
+        currentPauseBtn = null;
+    }
+}
+
+function activatePauseBtn(pb, audio) {
+    resetPauseBtn();
+    if (pb) {
+        pb.disabled = false;
+        pb.textContent = '⏸️ Pause';
+        audio.onended = () => { pb.disabled = true; pb.textContent = '⏸️ Pause'; currentPauseBtn = null; };
+        currentPauseBtn = pb;
+    }
+}
 
 function tabFromSpeedId(speedId) {
     if (speedId === 'verbsSpeed') return 'verbs';
@@ -354,6 +376,7 @@ function flushAudioCache(tab) {
 }
 
 function stopCurrentAudio() {
+    resetPauseBtn();
     if (currentAudio) {
         currentAudio.pause();
         currentAudio = null;
@@ -657,14 +680,17 @@ function renderItems(items, displayId, hideCheckId) {
         const voice = item.speaker ? document.getElementById('voiceSelectConv' + item.speaker).value : null;
         const normalBtn = document.createElement('button');
         normalBtn.className='btn-blue'; normalBtn.style.flex='none'; normalBtn.textContent='🔊 Listen';
-        normalBtn.onclick = () => speak(item.dk, normalBtn, false, speedId, voice);
+        normalBtn.onclick = () => speak(item.dk, normalBtn, false, speedId, voice, pauseBtn);
         const slowBtn = document.createElement('button');
         slowBtn.className='btn-blue'; slowBtn.style.flex='none'; slowBtn.textContent='🐢 Listen';
-        slowBtn.onclick = () => speak(item.dk, slowBtn, true, speedId, voice);
+        slowBtn.onclick = () => speak(item.dk, slowBtn, true, speedId, voice, pauseBtn);
+        const pauseBtn = document.createElement('button');
+        pauseBtn.className='btn-pause btn-blue'; pauseBtn.style.flex='none'; pauseBtn.textContent='⏸️ Pause'; pauseBtn.disabled=true;
+        pauseBtn.onclick = () => { if (!currentAudio) return; if (currentAudio.paused) { currentAudio.play(); pauseBtn.textContent='⏸️ Pause'; } else { currentAudio.pause(); pauseBtn.textContent='▶️ Resume'; } };
         const thinking = document.createElement('span');
         thinking.className='hidden'; thinking.style.cssText="font-size:0.85em;color:var(--text-sub);";
         thinking.textContent='🎙️ Sending request...';
-        btnDiv.appendChild(normalBtn); btnDiv.appendChild(slowBtn); btnDiv.appendChild(thinking);
+        btnDiv.appendChild(normalBtn); btnDiv.appendChild(slowBtn); btnDiv.appendChild(pauseBtn); btnDiv.appendChild(thinking);
         row.appendChild(btnDiv);
         display.appendChild(row);
     });
@@ -742,17 +768,18 @@ document.getElementById('transBtn').onclick = async () => {
     } catch(e) { logError("Translation Error: "+e.message); }
 };
 
-document.getElementById('listenBtn').onclick = () => { const t = document.getElementById('composerIn').value; if(t) speak(t,null,false,'composerSpeed'); };
-document.getElementById('listenSlowBtn').onclick = () => { const t = document.getElementById('composerIn').value; if(t) speak(t,null,true,'composerSpeed'); };
+document.getElementById('listenBtn').onclick = () => { const t = document.getElementById('composerIn').value; if(t) speak(t,null,false,'composerSpeed',null,document.getElementById('composerPauseBtn')); };
+document.getElementById('listenSlowBtn').onclick = () => { const t = document.getElementById('composerIn').value; if(t) speak(t,null,true,'composerSpeed',null,document.getElementById('composerPauseBtn')); };
+document.getElementById('composerPauseBtn').onclick = () => { const pb=document.getElementById('composerPauseBtn'); if (!currentAudio) return; if (currentAudio.paused) { currentAudio.play(); pb.textContent='⏸️ Pause'; } else { currentAudio.pause(); pb.textContent='▶️ Resume'; } };
 
 // ── speak router ──
-async function speak(text, btn=null, slow=false, speedId='verbsSpeed', voiceId=null) {
-    if (ACTIVE_TTS() === 'elevenlabs') await speakElevenLabs(text, btn, slow, speedId, voiceId);
-    else if (ACTIVE_TTS() === 'gemini') await speakGeminiTTS(text, btn, slow, speedId, voiceId);
-    else await speakMiniMax(text, btn, slow, speedId, voiceId);
+async function speak(text, btn=null, slow=false, speedId='verbsSpeed', voiceId=null, pauseBtn=null) {
+    if (ACTIVE_TTS() === 'elevenlabs') await speakElevenLabs(text, btn, slow, speedId, voiceId, pauseBtn);
+    else if (ACTIVE_TTS() === 'gemini') await speakGeminiTTS(text, btn, slow, speedId, voiceId, pauseBtn);
+    else await speakMiniMax(text, btn, slow, speedId, voiceId, pauseBtn);
 }
 
-async function speakElevenLabs(text, btn, slow, speedId, voiceId=null) {
+async function speakElevenLabs(text, btn, slow, speedId, voiceId=null, pauseBtn=null) {
     if (!requireKey(E_KEY,'ElevenLabs')) return;
     voiceId = voiceId || document.getElementById('voiceSelectVerbs').value;
     const modelId = document.getElementById('elevenModel').value;
@@ -763,6 +790,7 @@ async function speakElevenLabs(text, btn, slow, speedId, voiceId=null) {
         audioCache[cacheKey].currentTime=0;
         audioCache[cacheKey].playbackRate=rate;
         currentAudio = audioCache[cacheKey];
+        activatePauseBtn(pauseBtn, currentAudio);
         audioCache[cacheKey].play();
         return;
     }
@@ -780,12 +808,13 @@ async function speakElevenLabs(text, btn, slow, speedId, voiceId=null) {
         audioCache[cacheKey]=audio;
         tabAudioKeys[tabFromSpeedId(speedId)].push(cacheKey);
         currentAudio = audio;
+        activatePauseBtn(pauseBtn, currentAudio);
         audio.play();
     } catch(e) { logError("Connection failed."); }
     if (thinkEl) thinkEl.classList.add('hidden');
 }
 
-async function speakMiniMax(text, btn, slow, speedId, voiceId=null) {
+async function speakMiniMax(text, btn, slow, speedId, voiceId=null, pauseBtn=null) {
     if (!requireKey(MM_KEY,'MiniMax')) return;
     if (!MM_GID()) { logError("Please enter your MiniMax Group ID in the API Keys tab."); return; }
     voiceId = voiceId || document.getElementById('voiceSelectVerbs').value;
@@ -801,6 +830,7 @@ async function speakMiniMax(text, btn, slow, speedId, voiceId=null) {
         const a = new Audio(cached);
         a.playbackRate = rate;
         currentAudio = a;
+        activatePauseBtn(pauseBtn, currentAudio);
         a.play().catch(e => logError(`play() failed: ${e.message}`));
         return;
     }
@@ -838,6 +868,7 @@ async function speakMiniMax(text, btn, slow, speedId, voiceId=null) {
         stopCurrentAudio();
         const audio = new Audio(audioUrl);
         audio.playbackRate = rate;
+        activatePauseBtn(pauseBtn, audio);
         currentAudio = audio;
         audio.onerror = e => logError(`MM audio error ${e.target.error?.code}: ${e.target.error?.message}`);
         audio.play().catch(e => logError(`MM play() failed: ${e.name} – ${e.message}`));
@@ -847,7 +878,7 @@ async function speakMiniMax(text, btn, slow, speedId, voiceId=null) {
     if (thinkEl) thinkEl.classList.add('hidden');
 }
 
-async function speakGeminiTTS(text, btn, slow, speedId, voiceId=null) {
+async function speakGeminiTTS(text, btn, slow, speedId, voiceId=null, pauseBtn=null) {
     const password = document.getElementById('geminiTtsPassword').value;
     const prompt = document.getElementById('geminiTtsPrompt').value;
     if (!password) {
@@ -867,6 +898,7 @@ async function speakGeminiTTS(text, btn, slow, speedId, voiceId=null) {
         audioCache[cacheKey].currentTime=0;
         audioCache[cacheKey].playbackRate=rate;
         currentAudio = audioCache[cacheKey];
+        activatePauseBtn(pauseBtn, currentAudio);
         audioCache[cacheKey].play();
         return;
     }
@@ -883,6 +915,7 @@ async function speakGeminiTTS(text, btn, slow, speedId, voiceId=null) {
         audio.playbackRate = rate;
         audioCache[cacheKey] = audio;
         currentAudio = audio;
+        activatePauseBtn(pauseBtn, currentAudio);
         audio.play();
         return;
     }
@@ -928,6 +961,7 @@ async function speakGeminiTTS(text, btn, slow, speedId, voiceId=null) {
         localStorage.setItem('gtcache_' + cacheKey, data.audioContent);
         stopCurrentAudio();
         currentAudio = audio;
+        activatePauseBtn(pauseBtn, currentAudio);
         audio.play();
     } catch(e) { logError("Gemini TTS request failed: "+e.message); }
     if (thinkEl) thinkEl.classList.add('hidden');
