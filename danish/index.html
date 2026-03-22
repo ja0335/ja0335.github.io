@@ -35,6 +35,7 @@
         .conv-player button { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 6px 10px; border-radius: 50%; transition: background 0.15s; line-height: 1; fill: currentColor; color: var(--text-main); display: inline-flex; align-items: center; justify-content: center; }
         .conv-player button:hover:not(:disabled) { background: var(--input-border); }
         .conv-player button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .conv-player button.loop-active { color: var(--dk-red); }
         #errorLog { margin-top: 15px; padding: 10px; background: var(--error-bg); border: 1px solid #ff000033; border-radius: 8px; font-family: monospace; font-size: 0.75rem; color: #ff4444; display: none; word-wrap: break-word; }
         .result-box { background: var(--item-bg); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px solid var(--item-border); }
         #status { text-align: center; font-weight: bold; margin: 10px 0; font-size: 0.85em; min-height: 20px; }
@@ -337,6 +338,7 @@
     <button id="cpPlay" title="Play Conversation"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
     <button id="cpPause" title="Pause Conversation" disabled><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button>
     <button id="cpStop" title="Stop Conversation" disabled><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg></button>
+    <button id="cpLoop" title="Loop Conversation"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg></button>
 </div>
 
 <script>
@@ -522,6 +524,8 @@ function speakGeminiTTSWait(text, voiceId, rate, thinkEl) {
 function stopConversation() {
     isPlayingConv = false;
     isConvPaused = false;
+    isLoopConv = false;
+    document.getElementById('cpLoop').classList.remove('loop-active');
     resetPauseBtn();
     if (currentAudio) { currentAudio.pause(); currentAudio.onended = null; currentAudio = null; }
     document.querySelectorAll('#conv-display .row-playing').forEach(el => el.classList.remove('row-playing'));
@@ -529,6 +533,7 @@ function stopConversation() {
 }
 
 let isConvPaused = false;
+let isLoopConv = false;
 
 async function playConversation() {
     const items = JSON.parse(localStorage.getItem('lastConv') || '[]');
@@ -548,7 +553,12 @@ async function playConversation() {
         } catch(e) { if (thinkEl) thinkEl.classList.add('hidden'); break; }
         if (rows[i]) rows[i].classList.remove('row-playing');
     }
-    stopConversation();
+    if (isLoopConv && isPlayingConv) {
+        document.querySelectorAll('#conv-display .row-playing').forEach(el => el.classList.remove('row-playing'));
+        playConversation();
+    } else {
+        stopConversation();
+    }
 }
 
 function updateConvPlayerVisibility() {
@@ -590,6 +600,11 @@ document.getElementById('cpPause').onclick = () => {
 
 document.getElementById('cpStop').onclick = () => {
     stopConversation();
+};
+
+document.getElementById('cpLoop').onclick = () => {
+    isLoopConv = !isLoopConv;
+    document.getElementById('cpLoop').classList.toggle('loop-active', isLoopConv);
 };
 
 function updatePlayConvBtn() {
