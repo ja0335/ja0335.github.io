@@ -55,6 +55,10 @@
         .speed-slider { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 4px; background: var(--input-border); outline: none; margin-bottom: 0; padding: 0; border: none; }
         .speed-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: var(--dk-red); cursor: pointer; }
         .speed-slider::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: var(--dk-red); cursor: pointer; border: none; }
+        textarea::-webkit-scrollbar { width: 14px; }
+        textarea::-webkit-scrollbar-track { background: var(--input-border); border-radius: 7px; }
+        textarea::-webkit-scrollbar-thumb { background: var(--dk-red); border-radius: 7px; }
+        textarea { scrollbar-width: auto; scrollbar-color: var(--dk-red) var(--input-border); }
         #hideTextLabel { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-blue); color: white; padding: 0 16px; border-radius: 10px; align-self: stretch; cursor: pointer; font-weight: bold; white-space: nowrap; user-select: none; }
         #hideTextLabel:has(input:checked) { background: var(--dk-red); }
         /* API collapsible groups */
@@ -253,7 +257,10 @@
     <!-- ===== CONVERSATION TAB ===== -->
     <div id="tab-conversation" class="hidden">
         <h1>Conversation</h1>
-        <input type="text" id="convTopic" placeholder="e.g., ordering food at a restaurant">
+        <div style="position:relative;width:100%;">
+            <textarea id="convTopic" rows="8" placeholder="e.g., ordering food at a restaurant" style="padding-top:28px;"></textarea>
+            <button onclick="document.getElementById('convTopic').value='';lsSave('lastConvTopic','')" style="position:absolute;top:4px;right:24px;background:none;border:none;font-size:0.9rem;cursor:pointer;color:var(--text-sub);padding:2px 6px;line-height:1;z-index:1;" title="Clear">✕</button>
+        </div>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
             <label for="convCount" style="white-space:nowrap;color:var(--text-sub);font-size:0.95rem;">Number of lines:</label>
             <input type="number" id="convCount" value="10" min="2" max="50" style="margin-bottom:0;width:80px;">
