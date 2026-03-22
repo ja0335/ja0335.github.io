@@ -307,7 +307,7 @@
         <div style="display:flex;align-items:center;gap:10px;">
             <button class="btn-blue" id="listenBtn" style="flex:none;">🔊 Listen</button>
             <button class="btn-blue" id="listenSlowBtn" style="flex:none;">🐢 Listen</button>
-            <button class="btn-pause btn-blue" id="composerPauseBtn" style="flex:none;" disabled>⏸️ Pause</button>
+            <button class="btn-pause btn-blue" id="composerPauseBtn" style="flex:none;" disabled>⏸️</button>
             <span id="listenThinking" class="hidden" style="font-size:0.85em;color:var(--text-sub);white-space:nowrap;">🎙️ Sending request...</span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
@@ -356,7 +356,7 @@ let currentPauseBtn = null;
 function resetPauseBtn() {
     if (currentPauseBtn) {
         currentPauseBtn.disabled = true;
-        currentPauseBtn.textContent = '⏸️ Pause';
+        currentPauseBtn.textContent = '⏸️';
         currentPauseBtn = null;
     }
 }
@@ -365,8 +365,8 @@ function activatePauseBtn(pb, audio) {
     resetPauseBtn();
     if (pb) {
         pb.disabled = false;
-        pb.textContent = '⏸️ Pause';
-        audio.onended = () => { pb.disabled = true; pb.textContent = '⏸️ Pause'; currentPauseBtn = null; };
+        pb.textContent = '⏸️';
+        audio.onended = () => { pb.disabled = true; pb.textContent = '⏸️'; currentPauseBtn = null; };
         currentPauseBtn = pb;
     }
 }
@@ -923,8 +923,8 @@ function renderItems(items, displayId, hideCheckId) {
         slowBtn.className='btn-blue'; slowBtn.style.flex='none'; slowBtn.textContent='🐢 Listen';
         slowBtn.onclick = () => speak(item.dk, slowBtn, true, speedId, voice, pauseBtn);
         const pauseBtn = document.createElement('button');
-        pauseBtn.className='btn-pause btn-blue'; pauseBtn.style.flex='none'; pauseBtn.textContent='⏸️ Pause'; pauseBtn.disabled=true;
-        pauseBtn.onclick = () => { if (!currentAudio) return; if (currentAudio.paused) { currentAudio.play(); pauseBtn.textContent='⏸️ Pause'; } else { currentAudio.pause(); pauseBtn.textContent='▶️ Resume'; } };
+        pauseBtn.className='btn-pause btn-blue'; pauseBtn.style.flex='none'; pauseBtn.textContent='⏸️'; pauseBtn.disabled=true;
+        pauseBtn.onclick = () => { if (!currentAudio) return; if (currentAudio.paused) { currentAudio.play(); pauseBtn.textContent='⏸️'; } else { currentAudio.pause(); pauseBtn.textContent='▶️'; } };
         const thinking = document.createElement('span');
         thinking.className='hidden'; thinking.style.cssText="font-size:0.85em;color:var(--text-sub);";
         thinking.textContent='🎙️ Sending request...';
@@ -1010,7 +1010,7 @@ document.getElementById('transBtn').onclick = async () => {
 
 document.getElementById('listenBtn').onclick = () => { const t = document.getElementById('composerIn').value; if(t) speak(t,null,false,'composerSpeed',null,document.getElementById('composerPauseBtn')); };
 document.getElementById('listenSlowBtn').onclick = () => { const t = document.getElementById('composerIn').value; if(t) speak(t,null,true,'composerSpeed',null,document.getElementById('composerPauseBtn')); };
-document.getElementById('composerPauseBtn').onclick = () => { const pb=document.getElementById('composerPauseBtn'); if (!currentAudio) return; if (currentAudio.paused) { currentAudio.play(); pb.textContent='⏸️ Pause'; } else { currentAudio.pause(); pb.textContent='▶️ Resume'; } };
+document.getElementById('composerPauseBtn').onclick = () => { const pb=document.getElementById('composerPauseBtn'); if (!currentAudio) return; if (currentAudio.paused) { currentAudio.play(); pb.textContent='⏸️'; } else { currentAudio.pause(); pb.textContent='▶️'; } };
 
 // ── speak router ──
 async function speak(text, btn=null, slow=false, speedId='verbsSpeed', voiceId=null, pauseBtn=null) {
