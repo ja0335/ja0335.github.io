@@ -399,7 +399,7 @@ function speakElevenLabsWait(text, voiceId, rate, thinkEl) {
             currentAudio = a;
             a.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
             a.onerror = () => reject('error');
-            a.play();
+            a.play().catch(() => reject('error'));
             return;
         }
         if (thinkEl) thinkEl.classList.remove('hidden');
@@ -418,7 +418,7 @@ function speakElevenLabsWait(text, voiceId, rate, thinkEl) {
             currentAudio = audio;
             audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
             audio.onerror = () => reject('error');
-            audio.play();
+            audio.play().catch(() => reject('error'));
         } catch(e) { reject('error'); }
     });
 }
@@ -440,6 +440,7 @@ function speakMiniMaxWait(text, voiceId, rate, thinkEl) {
             a.onerror = () => { clearStale(); reject('error'); };
             try { await a.play(); return; } catch(e) {
                 clearStale();
+                a.onended = null; a.onerror = null;
                 if (!isPlayingConv) { reject('stopped'); return; }
             }
         }
@@ -458,7 +459,7 @@ function speakMiniMaxWait(text, voiceId, rate, thinkEl) {
             const audioUrl = data.data.audio;
             audioCache[cacheKey] = audioUrl;
             tabAudioKeys['conversation'].push(cacheKey);
-            localStorage.setItem('mmcache_' + cacheKey, audioUrl);
+            try { localStorage.setItem('mmcache_' + cacheKey, audioUrl); } catch(e) {}
             stopCurrentAudio();
             const audio = new Audio(audioUrl); audio.playbackRate = rate; currentAudio = audio;
             audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
@@ -482,7 +483,7 @@ function speakGeminiTTSWait(text, voiceId, rate, thinkEl) {
             const a = audioCache[cacheKey]; a.currentTime=0; a.playbackRate=rate; currentAudio = a;
             a.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
             a.onerror = () => reject('error');
-            a.play();
+            a.play().catch(() => reject('error'));
             return;
         }
         if (thinkEl) thinkEl.classList.remove('hidden');
@@ -505,7 +506,7 @@ function speakGeminiTTSWait(text, voiceId, rate, thinkEl) {
             currentAudio = audio;
             audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
             audio.onerror = () => reject('error');
-            audio.play();
+            audio.play().catch(() => reject('error'));
         } catch(e) { reject('error'); }
     });
 }
