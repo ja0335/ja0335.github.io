@@ -430,19 +430,21 @@ function speakMiniMaxWait(text, voiceId, rate, thinkEl) {
         if (!MM_GID()) { reject('nogid'); return; }
         const modelId = document.getElementById('minimaxModel').value;
         const cacheKey = `mm_${modelId}_${voiceId}_n_${text}`;
+        const clearStale = () => { delete audioCache[cacheKey]; localStorage.removeItem('mmcache_' + cacheKey); };
         const cached = audioCache[cacheKey] || localStorage.getItem('mmcache_' + cacheKey);
         if (cached) {
             audioCache[cacheKey] = cached;
             stopCurrentAudio();
             const a = new Audio(cached); a.playbackRate = rate; currentAudio = a;
-            a.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
-            const clearStale = () => { delete audioCache[cacheKey]; localStorage.removeItem('mmcache_' + cacheKey); };
-            a.onerror = () => { clearStale(); reject('error'); };
-            try { await a.play(); return; } catch(e) {
-                clearStale();
-                a.onended = null; a.onerror = null;
-                if (!isPlayingConv) { reject('stopped'); return; }
-            }
+            const playPromise = a.play();
+            const cacheOk = await new Promise(done => {
+                a.onended = () => done(true);
+                a.onerror = () => { clearStale(); done(false); };
+                playPromise.catch(() => { clearStale(); done(false); });
+            });
+            a.onended = null; a.onerror = null;
+            if (cacheOk) { if (isPlayingConv) resolve(); else reject('stopped'); return; }
+            if (!isPlayingConv) { reject('stopped'); return; }
         }
         if (thinkEl) thinkEl.classList.remove('hidden');
         try {
@@ -540,7 +542,7 @@ async function playConversation() {
         const thinkEl = rows[i] ? rows[i].querySelector('span') : null;
         try {
             await speakAndWait(item.dk, voiceId, 'convSpeed', thinkEl);
-        } catch(e) { if (thinkEl) thinkEl.classList.add('hidden'); break; }
+        } catch(e) { if (thinkEl) thinkEl.classList.add('hidden'); console.error('Conv sentence', i, 'failed:', e); break; }
         if (rows[i]) rows[i].classList.remove('row-playing');
     }
     if (isLoopConv && isPlayingConv) {
@@ -1217,7 +1219,7 @@ function startMatrix(){
 }
 function stopMatrix(){if(matrixRAF){cancelAnimationFrame(matrixRAF);matrixRAF=null;}document.getElementById('matrixCanvas').getContext('2d').clearRect(0,0,9999,9999);}
 document.getElementById('debugPanel').addEventListener('toggle',function(){this.open?startMatrix():stopMatrix();});
-(function(){const s=document.createElement('div');s.textContent='v2';s.style.cssText='position:fixed;bottom:4px;right:8px;font-size:10px;color:var(--text-sub);opacity:0.4;pointer-events:none;z-index:9999';document.body.appendChild(s);})();
+(function(){const s=document.createElement('div');s.textContent='v4';s.style.cssText='position:fixed;bottom:4px;right:8px;font-size:10px;color:var(--text-sub);opacity:0.4;pointer-events:none;z-index:9999';document.body.appendChild(s);})();
 </script>
 </body>
 </html>
