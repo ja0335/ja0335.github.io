@@ -436,9 +436,12 @@ function speakMiniMaxWait(text, voiceId, rate, thinkEl) {
             stopCurrentAudio();
             const a = new Audio(cached); a.playbackRate = rate; currentAudio = a;
             a.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
-            a.onerror = () => reject('error');
-            a.play().catch(() => reject('error'));
-            return;
+            const clearStale = () => { delete audioCache[cacheKey]; localStorage.removeItem('mmcache_' + cacheKey); };
+            a.onerror = () => { clearStale(); reject('error'); };
+            try { await a.play(); return; } catch(e) {
+                clearStale();
+                if (!isPlayingConv) { reject('stopped'); return; }
+            }
         }
         if (thinkEl) thinkEl.classList.remove('hidden');
         try {
@@ -1080,8 +1083,11 @@ async function speakMiniMax(text, btn, slow, speedId, voiceId=null, pauseBtn=nul
         a.playbackRate = rate;
         currentAudio = a;
         activatePauseBtn(pauseBtn, currentAudio);
-        a.play().catch(e => logError(`play() failed: ${e.message}`));
-        return;
+        const clearStale = () => { delete audioCache[cacheKey]; localStorage.removeItem('mmcache_' + cacheKey); };
+        a.onerror = () => { clearStale(); logError('Cached audio expired — click listen again to retry'); };
+        try { await a.play(); return; } catch(e) {
+            clearStale();
+        }
     }
 
     const thinkEl = btn ? btn.parentElement.querySelector('span') : document.getElementById('listenThinking');
