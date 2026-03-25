@@ -47,6 +47,48 @@ ja0335.github.io/
     └── index.html       # Main application (single file)
 ```
 
+## Git
+
+Git is not on PATH. Use GitHub Desktop's bundled git:
+```
+"C:\Users\JA033\AppData\Local\GitHubDesktop\app-3.5.6\resources\app\git\cmd\git.exe"
+```
+
+## Voice Cloning (MiniMax)
+
+Tools required:
+- **yt-dlp** (not on PATH): `C:\Users\JA033\AppData\Roaming\Python\Python314\Scripts\yt-dlp.exe`
+- **ffmpeg** (not on PATH): `C:\Users\JA033\Desktop\TEMP\ffmpeg\ffmpeg-8.1-essentials_build\bin\ffmpeg.exe`
+- **curl** (on PATH)
+
+### From a YouTube video
+
+```bash
+# 1. Download and convert to MP3
+"C:\Users\JA033\AppData\Roaming\Python\Python314\Scripts\yt-dlp.exe" -x --audio-format mp3 --ffmpeg-location "C:\Users\JA033\Desktop\TEMP\ffmpeg\ffmpeg-8.1-essentials_build\bin" -o "C:\Users\JA033\Desktop\TEMP\voice_clone.mp3" "<youtube_url>"
+
+# 2. Upload to MiniMax
+curl -s --location "https://api.minimax.io/v1/files/upload" --header "Authorization: Bearer <MINIMAX_API_KEY>" --form "purpose=voice_clone" --form "file=@C:\Users\JA033\Desktop\TEMP\voice_clone.mp3"
+# → returns file_id in response
+
+# 3. Clone the voice
+curl -s --location "https://api.minimax.io/v1/voice_clone" --header "Authorization: Bearer <MINIMAX_API_KEY>" --header "Content-Type: application/json" --data "{\"file_id\":<file_id>,\"voice_id\":\"<VoiceName_Danish>\",\"model\":\"speech-2.8-hd\"}"
+
+# 4. Add to dropdown in danish/index.html — minimax VOICES array:
+{ value: '<VoiceName_Danish>', label: '🇩🇰 <Display Name> – (Danish, cloned)' }
+```
+
+### Requirements
+- Audio must be 10s–5min, under 20MB
+- voice_id format: PascalCase with `_Danish` suffix (e.g., `Rasmus_Sondergaard_Danish`)
+- Model: `speech-2.8-hd`
+- MiniMax API docs: https://platform.minimax.io/docs/guides/speech-voice-clone
+
+### Cloned voices added so far
+- `Rasmus_Sondergaard_Danish` — Rasmus Søndergaard (from local file Mit.mp3)
+- `David_Jaeger_Danish` — David Jæger (from YouTube Short)
+- `Lasse_Hoyer_Danish` — Lasse Høyer (from YouTube Short)
+
 ## No Build Process
 
 This is a static site with no npm, build tools, or testing framework. Files can be edited directly and served from any web server or GitHub Pages.
