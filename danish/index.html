@@ -1255,7 +1255,7 @@ function startMatrix(){
 }
 function stopMatrix(){if(matrixRAF){cancelAnimationFrame(matrixRAF);matrixRAF=null;}document.getElementById('matrixCanvas').getContext('2d').clearRect(0,0,9999,9999);}
 document.getElementById('debugPanel').addEventListener('toggle',function(){this.open?startMatrix():stopMatrix();});
-(function(){const s=document.createElement('div');s.textContent='v5';s.style.cssText='position:fixed;bottom:4px;right:8px;font-size:10px;color:var(--text-sub);opacity:0.4;pointer-events:none;z-index:9999';document.body.appendChild(s);})();
+(function(){const s=document.createElement('div');s.textContent='v1.5.0';s.style.cssText='position:fixed;bottom:4px;right:8px;font-size:10px;color:var(--text-sub);opacity:0.4;pointer-events:none;z-index:9999';document.body.appendChild(s);})();
 </script>
 </body>
 </html>
