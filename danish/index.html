@@ -358,6 +358,42 @@ const tabAudioKeys = { verbs: [], conversation: [], composer: [] };
 let currentAudio = null;
 let currentPauseBtn = null;
 
+function setMediaSession(title, artist, state) {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: title || 'Danish Verb Master',
+        artist: artist || '',
+        album: 'Danish Verb Master'
+    });
+    navigator.mediaSession.playbackState = state || 'playing';
+}
+
+function onAudioEndSafe(audio, resolve, reject) {
+    let settled = false;
+    const finish = (val) => { if (settled) return; settled = true; audio.onended = null; audio.ontimeupdate = null; val(); };
+    audio.onended = () => finish(() => { if (isPlayingConv) resolve(); else reject('stopped'); });
+    audio.onerror = () => finish(() => reject('error'));
+    audio.ontimeupdate = () => {
+        if (audio.duration && audio.currentTime >= audio.duration - 0.1) {
+            finish(() => { if (isPlayingConv) resolve(); else reject('stopped'); });
+        }
+    };
+}
+
+function initMediaSession() {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.setActionHandler('play', () => {
+        document.getElementById('cpPlay').click();
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+        document.getElementById('cpPause').click();
+    });
+    navigator.mediaSession.setActionHandler('stop', () => {
+        document.getElementById('cpStop').click();
+    });
+}
+initMediaSession();
+
 function resetPauseBtn() {
     if (currentPauseBtn) {
         currentPauseBtn.disabled = true;
@@ -397,8 +433,7 @@ function speakElevenLabsWait(text, voiceId, rate, thinkEl) {
             stopCurrentAudio();
             const a = audioCache[cacheKey]; a.currentTime=0; a.playbackRate=rate;
             currentAudio = a;
-            a.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
-            a.onerror = () => reject('error');
+            onAudioEndSafe(a, resolve, reject);
             a.play().catch(() => reject('error'));
             return;
         }
@@ -416,8 +451,7 @@ function speakElevenLabsWait(text, voiceId, rate, thinkEl) {
             audioCache[cacheKey] = audio;
             tabAudioKeys['conversation'].push(cacheKey);
             currentAudio = audio;
-            audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
-            audio.onerror = () => reject('error');
+            onAudioEndSafe(audio, resolve, reject);
             audio.play().catch(() => reject('error'));
         } catch(e) { reject('error'); }
     });
@@ -464,8 +498,7 @@ function speakMiniMaxWait(text, voiceId, rate, thinkEl) {
             try { localStorage.setItem('mmcache_' + cacheKey, audioUrl); } catch(e) {}
             stopCurrentAudio();
             const audio = new Audio(audioUrl); audio.playbackRate = rate; currentAudio = audio;
-            audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
-            audio.onerror = () => reject('error');
+            onAudioEndSafe(audio, resolve, reject);
             audio.play().catch(() => reject('error'));
         } catch(e) { reject('error'); }
     });
@@ -483,8 +516,7 @@ function speakGeminiTTSWait(text, voiceId, rate, thinkEl) {
         if (audioCache[cacheKey]) {
             stopCurrentAudio();
             const a = audioCache[cacheKey]; a.currentTime=0; a.playbackRate=rate; currentAudio = a;
-            a.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
-            a.onerror = () => reject('error');
+            onAudioEndSafe(a, resolve, reject);
             a.play().catch(() => reject('error'));
             return;
         }
@@ -506,8 +538,7 @@ function speakGeminiTTSWait(text, voiceId, rate, thinkEl) {
             audio.playbackRate = rate; audioCache[cacheKey] = audio;
             tabAudioKeys['conversation'].push(cacheKey);
             currentAudio = audio;
-            audio.onended = () => { if (isPlayingConv) resolve(); else reject('stopped'); };
-            audio.onerror = () => reject('error');
+            onAudioEndSafe(audio, resolve, reject);
             audio.play().catch(() => reject('error'));
         } catch(e) { reject('error'); }
     });
@@ -519,8 +550,9 @@ function stopConversation() {
     isLoopConv = false;
     document.getElementById('cpLoop').classList.remove('loop-active');
     resetPauseBtn();
-    if (currentAudio) { currentAudio.pause(); currentAudio.onended = null; currentAudio = null; }
+    if (currentAudio) { currentAudio.pause(); currentAudio.onended = null; currentAudio.ontimeupdate = null; currentAudio = null; }
     document.querySelectorAll('#conv-display .row-playing').forEach(el => el.classList.remove('row-playing'));
+    setMediaSession(null, null, 'none');
     updateConvPlayerState();
 }
 
@@ -537,9 +569,11 @@ async function playConversation() {
     for (let i = 0; i < items.length; i++) {
         if (!isPlayingConv) break;
         const item = items[i];
+        const speakerLabel = item.speaker ? ('Speaker ' + item.speaker) : 'Speaker';
         const voiceId = item.speaker ? (document.getElementById('voiceSelectConv'+item.speaker)||document.getElementById('voiceSelectConvA')).value : null;
         if (rows[i]) { rows[i].classList.add('row-playing'); rows[i].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
         const thinkEl = rows[i] ? rows[i].querySelector('span') : null;
+        setMediaSession(item.dk, speakerLabel, 'playing');
         try {
             await speakAndWait(item.dk, voiceId, 'convSpeed', thinkEl);
         } catch(e) { if (thinkEl) thinkEl.classList.add('hidden'); console.error('Conv sentence', i, 'failed:', e); break; }
@@ -576,6 +610,7 @@ document.getElementById('cpPlay').onclick = () => {
     if (isConvPaused && currentAudio) {
         currentAudio.play();
         isConvPaused = false;
+        setMediaSession(null, null, 'playing');
         updateConvPlayerState();
     } else if (!isPlayingConv) {
         playConversation();
@@ -586,6 +621,7 @@ document.getElementById('cpPause').onclick = () => {
     if (currentAudio && !currentAudio.paused) {
         currentAudio.pause();
         isConvPaused = true;
+        setMediaSession(null, null, 'paused');
         updateConvPlayerState();
     }
 };
